@@ -31,7 +31,7 @@
  */
 
 #define VERSION		1
-#define REVISION	139
+#define REVISION	140
 
 /*$2
  -----------------------------------------------------------------------------------------------------------------------
@@ -74,8 +74,6 @@ typedef struct	tdst_Config_
 	int CmtFirstLineFillStar;	/* Fill cmt first line with '*' */
 	int CmtKeepCpp;				/* Keep C++ comments */
 	int ForceFctDefDeclSplit;	/* Force function defintions and declartions to split */
-	int JavaDoc;				/* Define java doc style */
-	int FctJavaDoc;				/* Define java doc style for functions */
 	int ForceBrace;				/* To force brace around statements */
 	int ConcatIf;				/* Concat if, while, for */
 	int MoveDeclAffect;			/* Move affect in decl */
@@ -110,7 +108,6 @@ typedef struct	tdst_Config_
 	int AddCmtFct;				/* Add empty comments before functions */
 	int AddCmtFctClass;			/* Idem inline class */
 	int TrailingCmtStyle;		/* Trailing comment style */
-	int SplitBeforeAtInFctCmts; /* Split line in comments for '@' */
 	int AddCmtClassAccess;
 	int SplitBoolBefore;
 	int AutoSepFctDecl;
@@ -203,7 +200,7 @@ typedef struct	tdst_Config_
 	int ConcatElseIf;
 	int TryHarderToKeepEmptyLines;
 	int StaticInit;
-	int CmtCategCtyle;
+	int doxygen;
 } tdst_Config;
 extern tdst_Config	Config;
 extern tdst_Config	Config1;

@@ -200,9 +200,7 @@
     -cmt_add_fct_def-
     -cmt_add_fct_def_class-
     -cmt_trailing_style-
-    -cmt_split_before_@_in_fct_cmts-
-    -cmt_java_doc-
-    -cmt_fct_java_doc-
+    -cmt_doxygen-
     -cmt_force_fct_def_decl_split-
     -cmt_add_class_access-
     -cmt_first_space_cpp-
@@ -211,7 +209,6 @@
     -cmt_cpp2c_keep_eol-
     -cmt_fct_categ-
     -cmt_fct_categ_in-
-	-cmt_fct_categ_style-
     -cmt_decl-
     -cmt_decl_max_level-
     -cmt_decl_before-
@@ -2671,42 +2668,6 @@ no-output_test- (DEFAULT)
 
     
 ===============================================================================
--cmt_split_before_@_in_fct_cmts-
--no-cmt_split_before_@_in_fct_cmts-      (DEFAULT)
-===============================================================================
-
-        Split lines in fucntion comments before '@'
-
-
-        Before:
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        /*
-         * This is a function @return number of elements
-         */
-
-         int Count(void)
-         {
-            return gCount;
-         }
-
-
-        After:
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        /*
-         * This is a function
-         * @return number of elements
-         */
-
-         int Count(void)
-         {
-            return gCount;
-         }
-
-
-
-===============================================================================
 -cmt_force_fct_def_decl_split-
 -no-cmt_force_fct_def_decl_split-   (DEFAULT)
 ===============================================================================
@@ -2717,72 +2678,16 @@ no-output_test- (DEFAULT)
 
 
 ===============================================================================
--cmt_java_doc-
--no-cmt_java_doc-   (DEFAULT)
+-cmt_doxygen-		(DEFAULT)
+-no-cmt_doxygen-   
 ===============================================================================
 
-        Enable the java doc type comments for all comments.
-        Also enables -cmt_sep_fill_star- and -cmt_fct_java_doc-
+        Enable the doxygen comment style.
         Example :
 
-        -cmt_java_doc
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        before:
-                
-        /* function comment */
-        void func(int a, int b)
-        {
-         /* this is a very very very very very very very very very very very very very very long comment */
-        }
-
-        after:
-
-        /**
-         * function comment
-         */
-        void func(int a, int b)
-        {
-         /**
-          * this is a very very very very very very very very
-          * very very very very very very long comment
-          */
-        }
-
-
-
-===============================================================================
--cmt_fct_java_doc-
--no-cmt_fct_java_doc-  (DEFAULT)
-===============================================================================
-
-        Enable the java doc type comments for functions only
-        Also enables -cmt_sep_fill_star-.
-        Example :
-
-        -cmt_fct_java_doc
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        before:
-                
-        /* function comment */
-        void func(int a, int b)
-        {
-         /* this is a very very very very very very very very very very very very very very long comment */
-        }
-
-        after:
-
-        /**
-         * function comment
-         */
-        void func(int a, int b)
-        {
-         /*
-          * this is a very very very very very very very very
-          * very very very very very very long comment
-          */
-        }
+        /** comment */
+        /*! comment */
+        /*!< comment */
 
 
 
@@ -2927,21 +2832,34 @@ no-output_test- (DEFAULT)
 
         GC can indent function definition comments in a special form
         depending of special words defined with those options.
+		You can specify an indentation style after a ";" character, after the
+		name. Style is a MASK.
+
+		bit 0	=>		Force a blank line before the categ word.
+		bit 1	=>		Force an EOL after the categ word.
+		bit 2	=>		Try to keep EOL and blanks until reached another word.
+
         Example :
 
         options
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        -cmt_fct_categ-main
-        -cmt_fct_categ-output
-        -cmt_fct_categ_in-parameters
+        -cmt_fct_categ-description;2	(EOL after)
+        -cmt_fct_categ-\return;1		(blank line before)
+        -cmt_fct_categ_in-@param
+        -cmt_fct_categ_in-@code;6		(EOL after + keep inside)
 
 
         before
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        /* Description: Description of the function. Return: none
-        Parameters: a - entering value b - increment value */
+        /* Description: Description of the function. \return none
+        @param a - entering value @param b - increment value
+		@code
+		int a;
+		
+		int b; 
+		*/
         int function(int a, int b)
         {
         }
@@ -2952,12 +2870,16 @@ no-output_test- (DEFAULT)
 
         /*
          ==========================================
-         Description:	Description of the function.
+         Description:
+		 Description of the function.
 
-         Return:	none
+         \return		none
+         @param			a   - entering value
+         @param			b   - increment value
+		 @code
+		 int a;
 
-         Parameters:    a   - entering value
-                        b   - increment value
+		 int b;
          ==========================================
          */
         int function(int a, int b)
@@ -2966,50 +2888,16 @@ no-output_test- (DEFAULT)
 
         See option(s) :
         [-no]-cmt_add_fct_def-
-		-cmt_fct_categ_style-
 
         Note(s) :
-        - In comment, special words must be followed by ':'.
+        - In comment, special words must be followed by ':', except if
+		  the word began with '\' or '@' (for doxygen).
         - A parameter must be followed by '-', and then by the comment.
         - This option can't be set in a source file with special comment
           /*$O */
         - You will typically define all the special words in the GC.cfg file.
 
 
-
-===============================================================================
--cmt_fct_categ_style-<num>	(DEFAULT 0)
-===============================================================================
-
-		Set indentation style for special keywords in comments.
-
-		-cmt_fct_categ_style-0
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        /*
-         ==========================================
-         Description:	Description of the function.
-
-         Return:	none
-
-         Parameters:    a   - entering value
-                        b   - increment value
-         ==========================================
-         */
-
-		-cmt_fct_categ_style-1
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        /*
-         ==========================================
-         Description:	Description of the function.
-         Return:		none
-         Parameters:    a   - entering value
-                        b   - increment value
-         ==========================================
-         */
-
-        See option(s) :
-		-cmt_fct_categ-
-		-cmt_fct_categ_in-
 
 ===============================================================================
 -cmt_decl-      (DEFAULT)

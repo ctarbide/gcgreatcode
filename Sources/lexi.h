@@ -241,6 +241,7 @@ typedef struct	token_
 	char			WizardCmtEnd;	/* App Wizard comment */
 	char			InWizardCmt;
 	char			Splitted;		/* End of line comment split cause too long */
+	int				doxygen;		/* doxygen first characters */
 
 	/* Level */
 	int				StmtLevel;		/* Statement level */

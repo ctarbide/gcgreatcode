@@ -1,4 +1,4 @@
-/*$T tools_cmt.c GC 1.139 12/15/04 23:59:15 */
+/*$T tools_cmt.c GC 1.140 12/25/04 21:04:25 */
 
 
 /*$6
@@ -130,12 +130,15 @@ int Tool_DeleteCommentMarks(token *pcur, char **pp, int markCnt)
  */
 void Tool_UnSplitCmt(token *pcur)
 {
-	/*~~~~~~~~~~~~*/
+	/*~~~~~~~~~~~~~*/
 	char	*p, *p1;
 	char	*gn;
 	char	*memo;
 	int		style;
-	/*~~~~~~~~~~~~*/
+	char	cmem;
+	int		typespec;
+	int		code;
+	/*~~~~~~~~~~~~~*/
 
 	p = pcur->pc_Value;
 
@@ -150,6 +153,22 @@ void Tool_UnSplitCmt(token *pcur)
 	*gn++ = '/';
 	*gn++ = '*';
 
+	if(Config.doxygen)
+	{
+		if(p[2] == '*' || p[2] == '!' || p[2] == '/')
+		{
+			pcur->doxygen = 1;
+			*gn++ = p[2];
+			if(p[3] == '<')
+			{
+				pcur->doxygen = 2;
+				*gn++ = '<';
+			}
+		}
+
+		p += pcur->doxygen;
+	}
+
 	/* Skip $X marks */
 	CmtMark(&p, &gn);
 
@@ -157,6 +176,7 @@ void Tool_UnSplitCmt(token *pcur)
 	Tool_DeleteCommentMarks(pcur, &p, 1);
 
 	*gn++ = ' ';
+	code = 0;
 	for(;;)
 	{
 		/* Zap spaces and '*' character at the beginning of a new line */
@@ -167,12 +187,18 @@ void Tool_UnSplitCmt(token *pcur)
 				while(_isspace(*p) || (*p == '*'))
 				{
 					if(p[0] == '*' && p[1] == '/') goto End;
-					p++;
+					if(code)
+						*gn++ = *p++;
+					else
+						p++;
 				}
 				break;
 			}
 
-			p++;
+			if(code)
+				*gn++ = *p++;
+			else
+				p++;
 		}
 
 		/* Handle marks at the end of the line, assume this is a box comment */
@@ -192,6 +218,24 @@ void Tool_UnSplitCmt(token *pcur)
 			/* Delete comment marks */
 			if(Tool_DeleteCommentMarks(pcur, &p, 3)) break;
 			if(p[0] == '*' && p[1] == '/') goto End;
+
+			/* Try to detect word categ with flag 4 (code) */
+			if(Lisword(*p) || *p == '\\' || *p == '@')
+			{
+				p1 = p;
+				while(Lisword(*p1) || *p1 == '\\' || *p1 == '@') p1++;
+				cmem = *p1;
+				*p1 = 0;
+				if(Tool_IsSpecialWord(p, &typespec))
+				{
+					if(typespec & 4)
+						code = 1;
+					else
+						code = 0;
+				}
+
+				*p1 = cmem;
+			}
 
 			/* Style */
 			if(*p == '$')
@@ -253,95 +297,6 @@ End:
 
 /*
  =======================================================================================================================
-    This routine deletes leading '*' and keeps eol and could be called instead of Tool_UnSplitCmt.
- =======================================================================================================================
- */
-void Tool_UnSplitCmt2(token *pcur)
-{
-	/*~~~~~~~~~~*/
-	char	*p;
-	char	*gn;
-	char	*memo;
-	/*~~~~~~~~~~*/
-
-	p = pcur->pc_Value;
-
-	/* Do not indent a fixed comment */
-	if(FixedComment(pcur)) return;
-
-	/* Allocate for the new comment */
-	memo = (char *) __malloc__(strlen(p) + 4);
-
-	/* Begin mark */
-	gn = memo;
-	*gn++ = '/';
-	*gn++ = '*';
-
-	/* Skip $X marks */
-	CmtMark(&p, &gn);
-
-	/* Delete leading comment marks of length skipping the "/" */
-	Tool_DeleteCommentMarks(pcur, &p, 1);
-
-	*gn++ = ' ';
-	for(;;)
-	{
-		if(*p == '\n')
-		{
-			while(_isspace(*p))
-			{
-				p++;
-			}
-
-			while(*p == '*')
-			{
-				if(p[0] == '*' && p[1] == '/') goto End;
-				p++;
-			}
-		}
-
-		/* Check for "*\n" */
-		if(*p == '\n') continue;
-		if(p[0] == '*' && p[1] == '/') goto End;
-		if(Tool_DeleteCommentMarks(pcur, &p, 3)) break;
-
-		/* Copy to end of line */
-		while(*p)
-		{
-			if(p[0] == '*' && p[1] == '/') goto End;
-
-			if(*p == '\n')
-			{
-				/* eat trailing '*' (i.e. boxed comments) */
-				if(p[-1] == '*') gn--;
-
-				/* store EOL and out of loop */
-				*gn++ = '\n';
-				break;
-			}
-			else
-			{
-				*gn++ = *p++;
-			}
-		}
-	}
-
-End:
-	/* Add an empty space at the end */
-	if(gn[-1] != ' ') *gn++ = ' ';
-
-	/* End mark */
-	*gn++ = '*';
-	*gn++ = '/';
-	*gn++ = 0;
-
-	/* Replace old comment with new one */
-	free(pcur->pc_Value);
-	pcur->pc_Value = memo;
-}
-
-/*
- =======================================================================================================================
  =======================================================================================================================
  */
 void Tool_ConcatCmt(FileDes *pfile, token *pcur)
@@ -371,7 +326,7 @@ void Tool_SplitCmtFirstLine(token *pcur)
 	char	*gn, *memospace;
 	char	*memo;
 	int		colcur, colbeg;
-	int		colend;
+	int		colend, i;
 	char	first;
 	/*~~~~~~~~~~~~~~~~~~~~*/
 
@@ -386,7 +341,11 @@ void Tool_SplitCmtFirstLine(token *pcur)
 	gn = memo;
 	*gn++ = '/';
 	*gn++ = '*';
-	if(Config.JavaDoc) *gn++ = '*';
+	if(pcur->doxygen)
+	{
+		for(i = 0; i < pcur->doxygen; i++) *gn++ = p[2 + i];
+		p += pcur->doxygen;
+	}
 
 	/* Marked comments */
 	CmtMark(&p, &gn);
@@ -473,7 +432,7 @@ End:
 void Tool_SplitCmtFct(token *pcur, int sep)
 {
 	/*~~~~~~~~~~~~~~~~~~~~~~~*/
-	int		lenw;
+	int		lenw, lew1;
 	char	*p, *p1, *p2;
 	char	*gn, *memospace;
 	int		len;
@@ -489,23 +448,18 @@ void Tool_SplitCmtFct(token *pcur, int sep)
 	int		isEmpty;
 	int		isNewAt;
 	int		firstCol;
+	int		precmt;
+	int		typespec;
 	/*~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	/* FIXME: Flag to decide if the comment is empty?? */
 	isEmpty = strlen(pcur->pc_Value) < 6;
-
-	/* Turn off cpp comment convertions if we're doing java doc */
-	if(Config.FctJavaDoc) pcur->CppComment = 0;
 
 	lenw = 0;
 	p = pcur->pc_Value;
 	first = 1;
 	lencateg = 0;
 	coldes = Config.TabSize;
-	if(Config.FctJavaDoc)
-		coldes = 1;
-	else
-		coldes = Config.TabSize;
 	pp1 = pp2 = NULL;
 	colc1 = 0;
 	memospace = 0;
@@ -521,7 +475,11 @@ void Tool_SplitCmtFct(token *pcur, int sep)
 
 	*gn++ = '/';
 	*gn++ = '*';
-	if(Config.FctJavaDoc) *gn++ = '*';
+	if(pcur->doxygen)
+	{
+		for(i = 0; i < pcur->doxygen; i++) *gn++ = p[2 + i];
+		p += pcur->doxygen;
+	}
 
 	/* Marked comments */
 	CmtMark(&p, &gn);
@@ -539,6 +497,7 @@ void Tool_SplitCmtFct(token *pcur, int sep)
 
 	justaftercateg = 1;
 	isNewAt = 1;
+	typespec = 0;
 	for(;;)
 	{
 forceeol:
@@ -572,94 +531,97 @@ forceeol:
 			if(*p == Config.CharSplit)
 			{
 				*gn++ = *p++;
+				p1 = p;
+				while(*p1 == ' ') p1++;
+				if(*p1 == '\n') *p1 = ' ';
+				if(typespec & 2) coldes = Config.TabSize;
 				goto forceeol;
 			}
 
 			/* Keeping EOL */
 			if(*p == '\n')
 			{
+				if(typespec & 2) coldes = Config.TabSize;
 				goto forceeol;
 			}
 
-			if((*p == '@') && Config.SplitBeforeAtInFctCmts)
+			if(!Lisword(*p) && !_isspace(*p) && *p != '\\' && *p != '@') goto copy;
+
+			precmt = 0;
+			if(*p == '\\' || *p == '@')
 			{
-				if(isNewAt && (firstCol != colcur))
-				{
-					/* New AT not at beginning of a line so force an EOL */
-					isNewAt = 0;
-					goto forceeol;
-				}
-				else
-				{
-					/* Now output '@' at start watching for another @ */
-					*gn++ = *p++;
-					isNewAt = 1;
-				}
+				precmt = 1;
+				p1++;
 			}
 
-			if(!Lisword(*p) && !_isspace(*p)) goto copy;
 			while(Lisword(*p1)) p1++;
 			p2 = p1;
-			while(_isspace(*p2)) p2++;
-			if(*p2 == ':')
+			if(!precmt)
+				while(_isspace(*p2)) p2++;
+
+			if(*p2 == ':' || precmt)
 			{
 				if(p2 != p1) *p2 = ' ';
 				mem = *p1;
 				*p1 = 0;
-				lenw = strlen(p);
-				okmotnew = Tool_IsSpecialWord(p);
+				lenw = lew1 = strlen(p);
+				okmotnew = Tool_IsSpecialWord(p, &typespec);
 				if(p2 != p1) *p2 = ':';
 				*p1 = mem;
 				if(!okmotnew) goto nomot;
 				*p2 = ' ';
-				*p1 = ':';
+				if(!precmt) *p1 = ':';
 				gn--;
 				while(*gn == ' ') gn--;
 				gn++;
 				if((gn[-1] != '\n') || !first)
 				{
-					if(Config.CmtCategCtyle == 0)
-						if(gn[-1] != '\n') *gn++ = '\n';
-					*gn++ = '\n';
+					if(gn[-1] != '\n') *gn++ = '\n';
 					memospace = NULL;
 				}
+
+				if(typespec & 1) *gn++ = '\n';
 
 				/* Set first indentation by inserting spaces */
 				for(i = 0; i < Config.TabSize; i++) *gn++ = ' ';
 				colcur = Config.TabSize;
 
-				*gn++ = *p++;
-
 				/* Copy the category */
-				colcur++;
-				while(*p != ':')
+				while(lew1--)
 				{
 					*gn++ = *p++;
 					colcur++;
 				}
 
-				colcur++;
-				*gn++ = *p++;
+				if(!precmt)
+				{
+					*gn++ = *p++;
+					colcur++;
+				}
 
 				/* Add spaces to indent text of category */
-				coldes = Tool_ToTab(colcur);
-				if(Config.CmtCategCtyle == 1)
-					coldes += Config.TabSize;
-				else
+				if(!(typespec & 2))
 				{
+					coldes = Tool_ToTab(colcur);
 					if(coldes == colcur)
 						coldes += Config.TabSize;
 					else if(lenw < Config.TabSize)
 						coldes += Config.TabSize;
-				}
 
-				for(i = colcur; i < coldes; i++)
+					for(i = colcur; i < coldes; i++)
+					{
+						*gn++ = ' ';
+						colcur++;
+					}
+				}
+				else
 				{
-					*gn++ = ' ';
-					colcur++;
+					*gn++ = '\n';
+					for(i = 0; i < Config.TabSize; i++) *gn++ = ' ';
+					colcur = Config.TabSize;
 				}
 
-				if(_isspace(*p)) p++;
+				while(_isspace(*p)) p++;
 				if(okmotnew != 2) justaftercateg = 1;
 			}
 			else
@@ -763,12 +725,16 @@ re:
 				}
 
 				/* Keeping EOL */
-				if(*p == '\n') goto forceeol;
+				if(*p == '\n') 
+				{
+					if(typespec & 2) coldes = Config.TabSize;
+					goto forceeol;
+				}
 
 				/* Copy spaces */
 				if(colcur < Config.LineLenCmt)
 				{
-					if(_isspace(*p))
+					while(_isspace(*p) && *p != '\n')
 					{
 						if(!_isspace(gn[-1]))
 						{
@@ -839,6 +805,7 @@ void Tool_SplitEndLineCmt(token *pcur)
 	char	*p, *gn;
 	char	*memospace;
 	int		colcur;
+	int		i;
 	/*~~~~~~~~~~~~~~~*/
 
 	memospace = NULL;
@@ -853,8 +820,19 @@ void Tool_SplitEndLineCmt(token *pcur)
 	p = pcur->pc_Value;
 	*gn++ = *p++;
 	*gn++ = *p++;
-	*gn++ = *p++;
-	colcur += 3;
+	colcur += 2;
+	if(pcur->doxygen)
+	{
+		for(i = 0; i < pcur->doxygen; i++) *gn++ = p[2 + i];
+		p += pcur->doxygen;
+		colcur += pcur->doxygen;
+	}
+	else
+	{
+		*gn++ = *p++;
+		colcur++;
+	}
+
 	for(;;)
 	{
 		while(!_isspace(*p))
@@ -953,6 +931,10 @@ void Tool_InCmt(token *pcur)
 	char	res;
 	int		lenin, totallen;
 	char	justafterparam;
+	int		precmt;
+	char	cmem1;
+	int		spew;
+	int		typespec;
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	inumpar = 0;
@@ -967,24 +949,28 @@ void Tool_InCmt(token *pcur)
 	p = pcur->pc_Value;
 	while(*p)
 	{
-		if(Lisword(*p))
+		precmt = 0;
+		if(Lisword(*p) || *p == '\\' || *p == '@')
 		{
-			memin = p;
+			if(*p == '\\' || *p == '@') precmt = 1;
+			memin = p++;
 			while(Lisword(*p)) p++;
 			p1 = p;
-			while(_isspace(*p1)) p1++;
-			if(*p1 == ':')
+			if(!precmt)
+				while(_isspace(*p1)) p1++;
+			if(*p1 == ':' || precmt)
 			{
+				cmem1 = *p;
 				*p = 0;
-				res = Tool_IsSpecialWord(memin);
+				res = Tool_IsSpecialWord(memin, &typespec);
 				if(res == 2)
 				{
 					lenin = strlen(memin) + 1;
-					*p = ':';
+					*p = cmem1;
 					goto foundin;
 				}
 
-				*p = ':';
+				*p = cmem1;
 			}
 		}
 
@@ -1028,10 +1014,10 @@ foundin:
 	p = memin;
 
 	/* Indent to common column */
+another:
 	colcur = Config.TabSize + lenin;
 	tmp = colcur;
 	if(lenin < Config.TabSize) tmp += Config.TabSize;
-	if(Config.CmtCategCtyle == 1) tmp += Config.TabSize;
 	tmp = Tool_ToTab(tmp);
 	while(colcur != tmp)
 	{
@@ -1067,7 +1053,7 @@ foundin:
 	for(;;)
 	{
 		/* Get param name */
-		if(Lisword(*p) || *p == '.')
+		if(Lisword(*p) || *p == '.' || *p == '\\' || *p == '@')
 		{
 			if(*p == Config.CharSplit)
 			{
@@ -1076,7 +1062,7 @@ foundin:
 			}
 
 			memin = p;
-			while(Lisword(*memin) || *memin == '.') memin++;
+			while(Lisword(*memin) || *memin == '.' || *memin == '\\' || *memin == '@') memin++;
 			cmem = *memin;
 			*memin = 0;
 			for(i = 0; i < inumpar; i++)
@@ -1087,10 +1073,11 @@ foundin:
 					break;
 				}
 
-				if(Tool_IsSpecialWord(p) && cmem == ':')
+				spew = Tool_IsSpecialWord(p, &typespec);
+				if(spew && (cmem == ':' || *p == '\\' || *p == '@'))
 				{
+					if(spew == 2) lenin = strlen(p);
 					*memin = cmem;
-					*gn++ = '\n';
 					*gn++ = '\n';
 					memospace = NULL;
 					colcur = 0;
@@ -1098,6 +1085,13 @@ foundin:
 					{
 						*gn++ = ' ';
 						colcur++;
+					}
+
+					if(spew == 2)
+					{
+						first = 1;
+						while(p != memin) *gn++ = *p++;
+						goto another;
 					}
 
 					goto End;
@@ -1169,7 +1163,7 @@ foundin:
 		else
 		{
 			/* Copy param */
-			while(!Lisword(*p) && *p != '.')
+			while(!Lisword(*p) && *p != '.' && *p != '\\' && *p != '@')
 			{
 				if(p[0] == '*' && p[1] == '/') goto End;
 				if((p[0] == Config.CharCmt3) && (p[1] == Config.CharCmt3)) goto End;
@@ -1178,7 +1172,8 @@ foundin:
 				{
 					if(colcur >= Config.LineLenCmt) break;
 					memospace = p;
-					if(*p == '\n')
+
+					if(*p == '\n' && p[1] != '\n')
 					{
 						p++;
 						continue;

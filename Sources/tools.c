@@ -1,4 +1,4 @@
-/*$T tools.c GC 1.139 12/15/04 23:59:09 */
+/*$T tools.c GC 1.139 12/25/04 16:32:54 */
 
 
 /*$6
@@ -628,15 +628,31 @@ int Tool_ToTab(int tab)
  =======================================================================================================================
  =======================================================================================================================
  */
-char Tool_IsSpecialWord(char *p)
+char Tool_IsSpecialWord(char *p, int *type)
 {
-	/*~~*/
-	int i;
-	/*~~*/
+	/*~~~~~~~~~~~~~~~~*/
+	int		i;
+	char	az_cpy[255];
+	char	*pz;
+	int		typespec;
+	/*~~~~~~~~~~~~~~~~*/
 
 	for(i = 0; i < gi_NumCmtCateg; i++)
 	{
-		if(!strcmp(p, gast_CmtCateg[i].mpsz_Name)) return (char) gast_CmtCateg[i].mi_Type;
+		typespec = 0;
+		strcpy(az_cpy, gast_CmtCateg[i].mpsz_Name);
+		pz = strrchr(az_cpy, ';');
+		if(pz) 
+		{
+			*pz = 0;
+			typespec = atoi(pz + 1);
+		}
+
+		if(!strcmp(p, az_cpy)) 
+		{
+			*type = typespec;
+			return (char) gast_CmtCateg[i].mi_Type;
+		}
 	}
 
 	return 0;
