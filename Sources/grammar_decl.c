@@ -152,6 +152,18 @@ void Grammar_IsType(FileDes *pfile)
 	{
 		if(pcur->InASM) continue;
 		if(pcur->i_ID == TOKEN_CCMT) continue;
+
+		if(pcur->i_ID == TOKEN_LESS || pcur->i_ID == TOKEN_GREAT)
+		{
+			pprev = Tool_PrevValid(pcur);
+			if(pprev->i_ID == TOKEN_WORD && pprev->i_SubSubID == TOKEN_WW_OPERATOR)
+			{
+				pcur->i_ID = TOKEN_WORD;
+				pcur->i_SubID = 0;
+				pcur->i_SubSubID = 0;
+			}
+		}
+
 		if(pcur->i_ID != TOKEN_WORD)
 		{
 			if(pcur->i_ID == TOKEN_ELLIPSIS)
