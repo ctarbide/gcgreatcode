@@ -15,7 +15,9 @@
     *****************************************************************************************
  */
 #include "ctype.h"
+#ifndef __APPLE__
 #include "malloc.h"
+#endif
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"

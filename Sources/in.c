@@ -17,7 +17,9 @@
 #include "ctype.h"
 #include "stdlib.h"
 #include "tools.h"
+#ifndef __APPLE__
 #include "malloc.h"
+#endif
 #include "stdio.h"
 #include "config.h"
 #include "string.h"
@@ -149,7 +151,7 @@ char OpenFile(int _i_Num)
 				pdes = &gpst_Files[_i_Num];
 				if(!strrchr(pdes->psz_FileName, '*')) return MOpenFile(_i_Num);
 				{
-								char dirname[PATH_MAX];
+								char dirname[_MAX_PATH];
 								strcpy(dirname, pdes->psz_FileName);
 								dirname[ strlen(dirname) - 1] = '\0';  /* Kill the '*' */
 								dir = opendir(dirname);

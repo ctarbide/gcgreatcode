@@ -14,7 +14,9 @@
     e-mail: cbeaudet@club-internet.fr
     *****************************************************************************************
  */
+#ifndef __APPLE__
 #include "malloc.h"
+#endif
 #include "string.h"
 #include "config.h"
 #include "lexi.h"

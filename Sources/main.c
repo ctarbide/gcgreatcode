@@ -16,7 +16,9 @@
  */
 #include "string.h"
 #include "stdlib.h"
+#ifndef __APPLE__
 #include "malloc.h"
+#endif
 #include "ctype.h"
 #include "stdio.h"
 #define CONFIG_GLOB

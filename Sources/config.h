@@ -50,8 +50,13 @@ enum { GC_ACCESS_WRITE_OK=W_OK, GC_S_IWRITE=S_IWUSR };
 
 #endif
 
+#include <stdio.h>
 #ifndef _MAX_PATH
+#ifdef PATH_MAX
 #define _MAX_PATH PATH_MAX
+#else
+#define _MAX_PATH 4096
+#endif
 #endif
 /*  End OS specific options */
 
@@ -60,7 +65,6 @@ enum { GC_ACCESS_WRITE_OK=W_OK, GC_S_IWRITE=S_IWUSR };
 #else
 #define EXTERN	extern
 #endif
-#include <stdio.h>
 
 /*$2
  -----------------------------------------------------------------------------------------------------------------------
