@@ -777,7 +777,14 @@ void Indent_CmtCommentFirstLine(FileDes *pfile)
 
 		/* Class */
 		pnext = pcur->pst_Next;
-		if(Config.AutoSepClass)
+		while(pnext->IsType) pnext = pnext->pst_Next;
+		if(pnext && pnext->i_ID == TOKEN_LESS) 
+		{
+			pnext = Tool_ToRelationNext(pnext);
+			if(pnext) pnext = pnext->pst_Next;
+		}
+
+		if(Config.AutoSepClass && pnext)
 		{
 			if
 			(

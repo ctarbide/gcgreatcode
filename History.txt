@@ -6,10 +6,14 @@
 		A lot of stuff to accept files ready for doxygen.
 		Options cmt_java_doc, cmt_fct_java_doc and cmt_split_before_@_in_fct_cmts- are dead.
 		Option -cmt_fct_categ_style- is dead.
+		Options -cmt_fct_categ- and -cmt_fct_categ_in- have now parameters.
 		-cmt_fct_categ- accept \name @name syntaxe instead of name:
 		Some crach corrected.
 		-cmt_sep_force_class-, -cmt_sep_force_struct-, does not add/change the comment if there's another
 		comment after, just before the class/struct declaration.
+		Correction in operator detection of < and >.
+		Correction in operator detection of const char * (for example).
+		Correction in nested templates.
 
 		Version 1.139 (15 December 2004), the first SourceForge one...
 		------------------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/*$T grammar_decl.c GC 1.139 12/15/04 23:58:02 */
+/*$T grammar_decl.c GC 1.140 12/29/04 11:34:32 */
 
 
 /*$6
@@ -133,6 +133,56 @@ token *Grammar_Affect(token *pcur)
  =======================================================================================================================
  =======================================================================================================================
  */
+void Grammar_IsTypeCorrect(FileDes *pfile)
+{
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	struct token_	*pcur;
+	struct token_	*pprev, *pnext;
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+	for(pcur = pfile->pst_RootToken; pcur; pcur = NextToken(pcur))
+	{
+		if(pcur->InASM) continue;
+		if(pcur->i_ID == TOKEN_CCMT) continue;
+
+		if(pcur->i_ID == TOKEN_LESS || pcur->i_ID == TOKEN_GREAT)
+		{
+			pprev = Tool_PrevValid(pcur);
+			if(pprev->i_ID == TOKEN_WORD && pprev->i_SubSubID == TOKEN_WW_OPERATOR)
+			{
+				pcur->i_ID = TOKEN_WORD;
+				pcur->i_SubID = 0;
+				pcur->i_SubSubID = 0;
+			}
+		}
+
+		if(pcur->i_ID == TOKEN_STAR)
+		{
+			pnext = Tool_NextValid(pcur);
+			if(pnext->i_ID == TOKEN_LPAREN)
+			{
+				pprev = Tool_PrevValid(pcur);
+				while(pprev->IsType)
+				{
+					if(pprev->i_ID == TOKEN_WORD && pprev->i_SubSubID == TOKEN_WW_OPERATOR)
+					{
+						pcur->i_ID = TOKEN_WORD;
+						pcur->i_SubID = 0;
+						pcur->i_SubSubID = 0;
+						break;
+					}
+
+					pprev = Tool_PrevValid(pprev);
+				}
+			}
+		}
+	}
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
 void Grammar_IsType(FileDes *pfile)
 {
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -152,17 +202,7 @@ void Grammar_IsType(FileDes *pfile)
 	{
 		if(pcur->InASM) continue;
 		if(pcur->i_ID == TOKEN_CCMT) continue;
-
-		if(pcur->i_ID == TOKEN_LESS || pcur->i_ID == TOKEN_GREAT)
-		{
-			pprev = Tool_PrevValid(pcur);
-			if(pprev->i_ID == TOKEN_WORD && pprev->i_SubSubID == TOKEN_WW_OPERATOR)
-			{
-				pcur->i_ID = TOKEN_WORD;
-				pcur->i_SubID = 0;
-				pcur->i_SubSubID = 0;
-			}
-		}
+		cret = 0;
 
 		if(pcur->i_ID != TOKEN_WORD)
 		{
@@ -426,7 +466,11 @@ okvirtual:
 			}
 
 			if(pnext->i_ID == TOKEN_LPAREN) goto lparen;
-			if(pnext->i_ID == TOKEN_WORD) pnext = Tool_NextValid(pnext);
+			if(pnext->i_ID == TOKEN_WORD) 
+			{
+				pnext = Tool_NextValid(pnext);
+				if(pnext->i_ID == TOKEN_SEMICOL) pnext = Tool_PrevValid(pnext);
+			}
 		}
 
 recom2:

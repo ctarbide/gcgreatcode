@@ -1372,6 +1372,7 @@ void Grammar(FileDes *pfile)
 	Grammar_LabelDecl(pfile);
 	Grammar_Class(pfile);
 	Grammar_IsType(pfile);
+	Grammar_IsTypeCorrect(pfile);
 	Grammar_InTemplate(pfile);
 	Grammar_InsideParen(pfile);
 	Grammar_IsType(pfile);

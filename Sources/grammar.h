@@ -19,6 +19,7 @@
 
 extern void Grammar_InsideParen(FileDes *);
 extern void Grammar_IsType(FileDes *);
+extern void Grammar_IsTypeCorrect(FileDes *);
 extern void Grammar_FctDef(FileDes *);
 extern void Grammar_FctParams(FileDes *);
 extern void Grammar_FctCall(FileDes *);

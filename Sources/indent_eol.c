@@ -2439,14 +2439,20 @@ void Indent_Constructor(FileDes *pfile)
 					{
 						pnext->ForceSpaceAfter = 0;
 						pend1 = Tool_ToRelationNext(pnext);
-						while(pnext != pend1)
+						if(pend1)
 						{
-							pnext->ForceEOLAfter = 0;
+							while(pnext != pend1)
+							{
+								pnext->ForceEOLAfter = 0;
+								pnext = NextToken(pnext);
+							}
+
+							if(pnext->pst_Prev->i_ID == TOKEN_GREAT)
+								pnext->pst_Prev->ForceSpaceAfter = 1;
+							else
+								pnext->pst_Prev->ForceSpaceAfter = 0;
 							pnext = NextToken(pnext);
 						}
-
-						pnext->pst_Prev->ForceSpaceAfter = 0;
-						pnext = NextToken(pnext);
 					}
 
 					if(pnext->i_ID == TOKEN_LPAREN)

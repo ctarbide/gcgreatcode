@@ -2838,12 +2838,25 @@ no-output_test- (DEFAULT)
 
         GC can indent function definition comments in a special form
         depending of special words defined with those options.
-		You can specify an indentation style after a ";" character, after the
-		name. Style is a MASK.
+
+		There are now some optional options after the declaration of the word.
+		-cmt_fct_categ-<typemask>;<column>
+		-cmt_fct_categ_in-<typemask>;<column>
+
+		<typemask>
 
 		bit 0	=>		Force a blank line before the categ word.
 		bit 1	=>		Force an EOL after the categ word.
 		bit 2	=>		Try to keep EOL and blanks until reached another word.
+
+		<column>
+
+		If you want to align text after the keyword on a given column.
+
+		Example :
+
+		-cmt_fct_categ-Description;2;20
+		-cmt_fct_categ-@code;0;20
 
 		NOTE
 		----
