@@ -17,6 +17,44 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+/*  Begin OS specific options */
+
+#ifdef WIN32
+
+#include "io.h"
+
+#define GC_STRDUP _strdup
+#define GC_STRICMP _stricmp
+#define GC_UNLINK _unlink
+#define GC_ACCESS _access
+enum { GC_ACCESS_WRITE_OK=2, GC_S_IWRITE=_S_IWRITE };
+#define GC_CHMOD _chmod
+#define GC_STRDATE _strdate
+#define GC_STRTIME _strtime
+
+#else
+
+#include <sys/types.h> /* for chmod */
+#include <sys/stat.h> /* for stat() */
+#include <unistd.h>
+#include <dirent.h> //POSIX COMPLIANT
+
+#define GC_STRDUP strdup
+#define GC_STRICMP strcasecmp
+#define GC_UNLINK unlink
+#define GC_ACCESS access
+enum { GC_ACCESS_WRITE_OK=W_OK, GC_S_IWRITE=S_IWUSR };
+#define GC_CHMOD chmod
+#define GC_STRDATE(value) "NO_DATE"
+#define GC_STRTIME(value) "NO_TIME"
+
+#endif
+
+#ifndef _MAX_PATH
+#define _MAX_PATH PATH_MAX
+#endif
+/*  End OS specific options */
+
 #ifdef CONFIG_GLOB
 #define EXTERN
 #else

@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 	/* Search for -help to print usage */
 	for(i = 1; i < argc; i++)
 	{
-		if(!_stricmp(argv[i], "-help"))
+		if(!GC_STRICMP(argv[i], "-help"))
 		{
 			Usage();
 			return 0;

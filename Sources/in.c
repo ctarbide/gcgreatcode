@@ -16,7 +16,6 @@
  */
 #include "ctype.h"
 #include "stdlib.h"
-#include "io.h"
 #include "tools.h"
 #include "malloc.h"
 #include "stdio.h"
@@ -60,7 +59,7 @@ char c_IsPresent(char *name, char **tab, int size)
 
 	for(i = 0; i < size; i++)
 	{
-		if(!_stricmp(name, tab[i])) return 1;
+		if(!GC_STRICMP(name, tab[i])) return 1;
 	}
 
 	return 0;
@@ -125,24 +124,51 @@ zap:
  */
 char OpenFile(int _i_Num)
 {
-	/*~~~~~~~~~~~~~~~~~~~~~~*/
-	long				h;
-	struct _finddata_t	t;
-	FileDes				*pdes;
-	/*~~~~~~~~~~~~~~~~~~~~~~*/
+#ifdef WIN32
+				/*~~~~~~~~~~~~~~~~~~~~~~*/
+				long				h;
+				struct _finddata_t	t;
+				FileDes				*pdes;
+				/*~~~~~~~~~~~~~~~~~~~~~~*/
 
-	pdes = &gpst_Files[_i_Num];
-	if(!strrchr(pdes->psz_FileName, '*')) return MOpenFile(_i_Num);
-	h = _findfirst(pdes->psz_FileName, &t);
-	if(!h) return 0;
-	do
-	{
-		if(gi_NumFiles == 1000) Fatal("Too many input files", 0);
-		strcpy(gazstar + gazstarin, t.name);
-		gpst_Files[gi_NumFiles++].psz_FileName = gazstar + gazstarin;
-		gazstarin += strlen(t.name) + 1;
-	} while(_findnext(h, &t) != -1);
-	return 2;
+				pdes = &gpst_Files[_i_Num];
+				if(!strrchr(pdes->psz_FileName, '*')) return MOpenFile(_i_Num);
+				h = _findfirst(pdes->psz_FileName, &t);
+				if(!h) return 0;
+				do
+				{
+								if(gi_NumFiles == 1000) Fatal("Too many input files", 0);
+								strcpy(gazstar + gazstarin, t.name);
+								gpst_Files[gi_NumFiles++].psz_FileName = gazstar + gazstarin;
+								gazstarin += strlen(t.name) + 1;
+				} while(_findnext(h, &t) != -1);
+				return 2;
+#else
+				DIR * dir;
+				FileDes * pdes;
+				pdes = &gpst_Files[_i_Num];
+				if(!strrchr(pdes->psz_FileName, '*')) return MOpenFile(_i_Num);
+				{
+								char dirname[PATH_MAX];
+								strcpy(dirname, pdes->psz_FileName);
+								dirname[ strlen(dirname) - 1] = '\0';  /* Kill the '*' */
+								dir = opendir(dirname);
+								if(!dir) return 0;
+				}
+
+				{
+								struct dirent * d=readdir(dir);
+                while(d)
+								{
+												if(gi_NumFiles == 1000) Fatal("Too many input files", 0);
+												strcpy(gazstar + gazstarin, d->d_name);
+												gpst_Files[gi_NumFiles++].psz_FileName = gazstar + gazstarin;
+												gazstarin += strlen(d->d_name) + 1;
+                        d = readdir(dir);
+								}
+				}
+				return 2;
+#endif
 }
 
 /*
@@ -151,6 +177,7 @@ char OpenFile(int _i_Num)
  */
 FILE *MOpenFileRec(char *path, char *file)
 {
+#ifdef WIN32
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 	struct _finddata_t	st_FileInfo;
 	unsigned long		ul_Handle;
@@ -167,15 +194,15 @@ FILE *MOpenFileRec(char *path, char *file)
 		{
 			if(st_FileInfo.attrib == _A_SUBDIR)
 			{
-				if(!_stricmp(st_FileInfo.name, ".")) continue;
-				if(!_stricmp(st_FileInfo.name, "..")) continue;
+				if(!GC_STRICMP(st_FileInfo.name, ".")) continue;
+				if(!GC_STRICMP(st_FileInfo.name, "..")) continue;
 				sprintf(asz_Temp, "%s/%s", path, st_FileInfo.name);
 				h = MOpenFileRec(asz_Temp, file);
 				if(h) return h;
 			}
 			else
 			{
-				if(!_stricmp(file, st_FileInfo.name))
+				if(!GC_STRICMP(file, st_FileInfo.name))
 				{
 					sprintf(asz_Temp, "%s/%s", path, st_FileInfo.name);
 					h = fopen(asz_Temp, "rt");
@@ -185,8 +212,45 @@ FILE *MOpenFileRec(char *path, char *file)
 		} while(_findnext(ul_Handle, &st_FileInfo) != -1);
 		_findclose(ul_Handle);
 	}
-
 	return NULL;
+#else
+  {
+    DIR * dir;
+    char asz_Temp[_MAX_PATH];
+    FILE * h;
+
+    strcpy(asz_Temp, path);
+    dir = opendir(asz_Temp);
+    if(!dir)
+    {
+      struct dirent * d=readdir(dir);
+      while(d)
+      {
+        struct stat stat_buf;  
+        stat(d->d_name, &stat_buf);
+        if(S_ISDIR(stat_buf.st_mode))
+        {
+          if(!GC_STRICMP(d->d_name, ".")) continue;
+          if(!GC_STRICMP(d->d_name, "..")) continue;
+          sprintf(asz_Temp, "%s/%s", path, d->d_name);
+          h = MOpenFileRec(asz_Temp, file);
+          if(h) return h;
+        }
+        else
+        {
+          if(!GC_STRICMP(file, d->d_name))
+          {
+						sprintf(asz_Temp, "%s/%s", path, d->d_name);
+						h = fopen(asz_Temp, "rt");
+            if(h) return h;
+          }
+        }
+        d=readdir(dir);
+      }
+    }
+  }
+	return NULL;
+#endif
 }
 
 /*
@@ -303,20 +367,20 @@ void CreateFile(char *_psz_FileName)
 
 	if
 	(
-		(_stricmp(psz_Temp, "c"))
-	&&	(_stricmp(psz_Temp, "cpp"))
-	&&	(_stricmp(psz_Temp, "cxx"))
-	&&	(_stricmp(psz_Temp, "h"))
-	&&	(_stricmp(psz_Temp, "hxx"))
-	&&	(_stricmp(psz_Temp, "hpp"))
-	&&	(_stricmp(psz_Temp, "java"))
-	&&	(_stricmp(psz_Temp, "inc"))
-	&&	(_stricmp(psz_Temp, "cs"))
+		(GC_STRICMP(psz_Temp, "c"))
+	&&	(GC_STRICMP(psz_Temp, "cpp"))
+	&&	(GC_STRICMP(psz_Temp, "cxx"))
+	&&	(GC_STRICMP(psz_Temp, "h"))
+	&&	(GC_STRICMP(psz_Temp, "hxx"))
+	&&	(GC_STRICMP(psz_Temp, "hpp"))
+	&&	(GC_STRICMP(psz_Temp, "java"))
+	&&	(GC_STRICMP(psz_Temp, "inc"))
+	&&	(GC_STRICMP(psz_Temp, "cs"))
 	) return;
 
 	/* First init file in array */
 	memset(&gpst_Files[gi_NumFiles], 0, sizeof(FileDes));
-	gpst_Files[gi_NumFiles].psz_FileName = _strdup(_psz_FileName);
+	gpst_Files[gi_NumFiles].psz_FileName = GC_STRDUP(_psz_FileName);
 
 	/* One more gloal file */
 	gi_NumFiles++;
@@ -328,6 +392,7 @@ void CreateFile(char *_psz_FileName)
  */
 void CreateFilesInDir(char *_psz_Path)
 {
+#ifdef WIN32
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 	struct _finddata_t	st_FileInfo;
 	unsigned long		ul_Handle;
@@ -349,8 +414,8 @@ void CreateFilesInDir(char *_psz_Path)
 			/* One dir has been detected. Recurse call except for "." and ".." */
 			if(st_FileInfo.attrib & _A_SUBDIR)
 			{
-				if(!_stricmp(st_FileInfo.name, ".")) continue;
-				if(!_stricmp(st_FileInfo.name, "..")) continue;
+				if(!GC_STRICMP(st_FileInfo.name, ".")) continue;
+				if(!GC_STRICMP(st_FileInfo.name, "..")) continue;
 				if(!c_IsPresent(asz_Temp, gpsz_ExcludeDirs, gi_NumExcludeDirs)) CreateFilesInDir(asz_Temp);
 			}
 
@@ -362,4 +427,34 @@ void CreateFilesInDir(char *_psz_Path)
 		} while(_findnext(ul_Handle, &st_FileInfo) != -1);
 		_findclose(ul_Handle);
 	}
+#else
+  char asz_Temp[_MAX_PATH];
+  DIR * dir;
+  strcpy(asz_Temp, _psz_Path);
+  dir = opendir(asz_Temp);
+  if(!dir)
+  {
+    struct dirent * d=readdir(dir);
+    while(d)
+    {
+      struct stat stat_buf;
+      stat(d->d_name, &stat_buf);
+      /* Compute real name and file/dir bigfile name */
+      strcpy(asz_Temp, _psz_Path);
+      strcat(asz_Temp, "/");
+      strcat(asz_Temp, d->d_name);
+      /* One dir has been detected. Recurse call except for "." and ".." */
+      if(S_ISDIR(stat_buf.st_mode))
+      {
+        if(!GC_STRICMP(d->d_name, ".")) continue;
+        if(!GC_STRICMP(d->d_name, "..")) continue;
+        if(!c_IsPresent(asz_Temp, gpsz_ExcludeDirs, gi_NumExcludeDirs)) CreateFilesInDir(asz_Temp);
+      }
+      /* One file has been detected. Add it to bigfile */
+      else       {
+        CreateFile(asz_Temp);       }
+      d=readdir(dir);
+    }
+  }
+#endif
 }

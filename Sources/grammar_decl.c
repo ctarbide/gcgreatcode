@@ -1454,7 +1454,7 @@ void Grammar_MoveDeclAffect(FileDes *pfile)
 							/* Copy variable name */
 							cmemo = 1;
 							pend = NextToken(pend);
-							pend->pc_Value = _strdup(ptmp->pc_Value);
+							pend->pc_Value = GC_STRDUP(ptmp->pc_Value);
 							pend->StmtLevel = pcur->StmtLevel;
 							pend->ForceEOLAfter = 0;
 
@@ -1487,7 +1487,7 @@ void Grammar_MoveDeclAffect(FileDes *pfile)
 							if(pend) pend = NextToken(pend);
 							if(pend)
 							{
-								pend->pc_Value = _strdup(";");
+								pend->pc_Value = GC_STRDUP(";");
 								pend->WasEOLAfter = pend->ForceEOLAfter = 1;
 								Tool_ForceEOLAfter(pend, 1);
 							}

@@ -492,7 +492,7 @@ void ConvertFileToArgv(FILE *h, int *argc)
 		}
 		else
 		{
-			gargv[*argc] = _strdup(pmem);
+			gargv[*argc] = GC_STRDUP(pmem);
 			ptmp++;
 		}
 		(*argc)++;
@@ -542,7 +542,7 @@ void Options(int argc, char *argv[])
 				case TYPE_OPT_INSERT:
 					if(gi_NumFileInsert == MAX_DEF_FILEINSERT) Fatal("Too many file insertion", NULL);
 					ptest += strlen(gast_Options[j].name);
-					gapsz_FileInsert[gi_NumFileInsert++] = _strdup(ptest);
+					gapsz_FileInsert[gi_NumFileInsert++] = GC_STRDUP(ptest);
 					goto l_ok;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
@@ -550,13 +550,13 @@ void Options(int argc, char *argv[])
 				case TYPE_OPT_EXTTOKEN:
 					if(gi_NumExtTokens == LEXI_C_MaxExtTokens) Fatal("Too many extended tokens", NULL);
 					ptest += strlen(gast_Options[j].name);
-					gast_ExtList[gi_NumExtTokens].name = _strdup(ptest);
+					gast_ExtList[gi_NumExtTokens].name = GC_STRDUP(ptest);
 					p = gast_ExtList[gi_NumExtTokens].name;
 					while(*p && *p != '$') p++;
 					if(!*p) Fatal("Invalid extended token definition", NULL);
 					*p = 0;
 					p++;
-					gast_ExtList[gi_NumExtTokens].as = _strdup(p);
+					gast_ExtList[gi_NumExtTokens].as = GC_STRDUP(p);
 					p = gast_ExtList[gi_NumExtTokens++].as;
 					while(*p && !isspace(*p)) p++;
 					*p = 0;
@@ -590,7 +590,7 @@ void Options(int argc, char *argv[])
 				case TYPE_OPT_DIR:
 					if(gi_NumScanFiles == MAX_DEF_FILESDIRS) Fatal("Too many directories", NULL);
 					ptest += strlen(gast_Options[j].name);
-					gpsz_RecurseDirs[gi_NumRecurseDirs++] = _strdup(ptest);
+					gpsz_RecurseDirs[gi_NumRecurseDirs++] = GC_STRDUP(ptest);
 					goto l_ok;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
@@ -598,14 +598,14 @@ void Options(int argc, char *argv[])
 				case TYPE_OPT_DIREX:
 					if(gi_NumExcludeFiles == MAX_DEF_FILESDIRS) Fatal("Too many exclude directories", NULL);
 					ptest += strlen(gast_Options[j].name);
-					gpsz_ExcludeDirs[gi_NumExcludeDirs++] = _strdup(ptest);
+					gpsz_ExcludeDirs[gi_NumExcludeDirs++] = GC_STRDUP(ptest);
 					goto l_ok;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
 				case TYPE_OPT_DEPEND:
 					ptest += strlen(gast_Options[j].name);
-					gpsz_IncludeDirs[gi_NumIncludesDirs++] = _strdup(ptest);
+					gpsz_IncludeDirs[gi_NumIncludesDirs++] = GC_STRDUP(ptest);
 					goto l_ok;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
@@ -613,7 +613,7 @@ void Options(int argc, char *argv[])
 				case TYPE_OPT_FILE:
 					if(gi_NumScanFiles == MAX_DEF_FILESDIRS) Fatal("Too many files", NULL);
 					ptest += strlen(gast_Options[j].name);
-					gpsz_ScanFiles[gi_NumScanFiles++] = _strdup(ptest);
+					gpsz_ScanFiles[gi_NumScanFiles++] = GC_STRDUP(ptest);
 					goto l_ok;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
@@ -650,7 +650,7 @@ void Options(int argc, char *argv[])
 				case TYPE_OPT_FILEEX:
 					if(gi_NumExcludeFiles == MAX_DEF_FILESDIRS) Fatal("Too many exclude files", NULL);
 					ptest += strlen(gast_Options[j].name);
-					gpsz_ExcludeFiles[gi_NumExcludeFiles++] = _strdup(ptest);
+					gpsz_ExcludeFiles[gi_NumExcludeFiles++] = GC_STRDUP(ptest);
 					goto l_ok;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
@@ -658,7 +658,7 @@ void Options(int argc, char *argv[])
 				case TYPE_OPT_CTGFXCMT:
 					if(gi_NumCmtCateg == MAX_DEF_CATEG) Fatal("Too many categories for function comment", NULL);
 					ptest += strlen(gast_Options[j].name);
-					gast_CmtCateg[gi_NumCmtCateg].mpsz_Name = _strdup(ptest);
+					gast_CmtCateg[gi_NumCmtCateg].mpsz_Name = GC_STRDUP(ptest);
 					gast_CmtCateg[gi_NumCmtCateg++].mi_Type = 1;
 					goto l_ok;
 
@@ -667,7 +667,7 @@ void Options(int argc, char *argv[])
 				case TYPE_OPT_CTGFXCMT1:
 					if(gi_NumCmtCateg == MAX_DEF_CATEG) Fatal("Too many categories for function comment", NULL);
 					ptest += strlen(gast_Options[j].name);
-					gast_CmtCateg[gi_NumCmtCateg].mpsz_Name = _strdup(ptest);
+					gast_CmtCateg[gi_NumCmtCateg].mpsz_Name = GC_STRDUP(ptest);
 					gast_CmtCateg[gi_NumCmtCateg++].mi_Type = 2;
 					goto l_ok;
 
@@ -676,21 +676,21 @@ void Options(int argc, char *argv[])
 				case TYPE_OPT_REPLACE:
 					if(gi_NumReplace == MAX_DEF_REPLACE) Fatal("Too many words for replacement", NULL);
 					ptest += strlen(gast_Options[j].name);
-					gast_Replace[gi_NumReplace].mpsz_Name1 = _strdup(ptest);
+					gast_Replace[gi_NumReplace].mpsz_Name1 = GC_STRDUP(ptest);
 					ReplaceFirst[*ptest] = 1;
 					p = gast_Replace[gi_NumReplace].mpsz_Name1;
 					while(*p && *p != '$') p++;
 					if(!*p) Fatal("Invalid replace words definition", NULL);
 					*p = 0;
 					p++;
-					gast_Replace[gi_NumReplace++].mpsz_Name2 = _strdup(p);
+					gast_Replace[gi_NumReplace++].mpsz_Name2 = GC_STRDUP(p);
 					goto l_ok;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
 				case TYPE_OPT_FIXME_CMT:
 					ptest += strlen(gast_Options[j].name);
-					gz_FixmeComment = _strdup(ptest);
+					gz_FixmeComment = GC_STRDUP(ptest);
 					goto l_ok;
 				}
 			}

@@ -47,7 +47,7 @@ void Indent_ParseOptions(FileDes *pfile)
 			if((pcur->pc_Value[2] == CMTMARK) && (pcur->pc_Value[3] == 'O'))
 			{
 				pcur->OptionCmt = 1;
-				pc_cmt = _strdup(pcur->pc_Value + 4);
+				pc_cmt = GC_STRDUP(pcur->pc_Value + 4);
 				pc_cmt[strlen(pc_cmt) - 1] = ' ';
 				pc_cmt[strlen(pc_cmt) - 2] = ' ';
 				Options(1, &pc_cmt);

@@ -1149,7 +1149,7 @@ another:
 			*memin = 0;
 			for(i = 0; i < inumpar; i++)
 			{
-				if(!paramsseen[i] && !_stricmp(p, params[i]))
+				if(!paramsseen[i] && !GC_STRICMP(p, params[i]))
 				{
 					paramsseen[i] = 1;
 					break;
@@ -1424,9 +1424,9 @@ void Tool_AddTag(FileDes *pfile, token *pcur)
 		sprintf(&memo[5], psz_Temp + 1);
 	strcat(memo, " GC");
 	sprintf(memo, "%s %d.%03d ", memo, VERSION, REVISION);
-	strcat(memo, _strdate(asz_Temp));
+	strcat(memo, GC_STRDATE(asz_Temp));
 	strcat(memo, " ");
-	strcat(memo, _strtime(asz_Temp));
+	strcat(memo, GC_STRTIME(asz_Temp));
 	strcat(memo, " */");
 	free(pcur->pc_Value);
 	pcur->pc_Value = memo;
@@ -1448,7 +1448,7 @@ token *Tool_AddEmpty(FileDes *pfile, token *pcur, char *val, int level, int subi
 	Tool_InsertTokenBefore(pfile, pcur, TOKEN_CCMT);
 	pprev = PrevToken(pcur);
 	pprev->i_SubID = subid;
-	pprev->pc_Value = _strdup(val);
+	pprev->pc_Value = GC_STRDUP(val);
 	if(pprev->pst_Prev && pcur->In_PP_Define)
 		pprev->InPP = pprev->pst_Prev->InPP;
 	else
@@ -1481,7 +1481,7 @@ token *Tool_AddEmptyCmtAfterIfMissing(FileDes *pfile, token *pcur)
 		pprev = pcur;
 		pcur = Tool_InsertTokenAfter(pfile, pcur, TOKEN_CCMT);
 		pcur->i_SubID = TOKEN_W_CMT_FUNC_PARAM;
-		pcur->pc_Value = _strdup(gz_FixmeComment);
+		pcur->pc_Value = GC_STRDUP(gz_FixmeComment);
 		pcur->CppComment = 0;
 		pcur->EndDecl = 0;
 		pprev->ForceEOLAfter = 0;

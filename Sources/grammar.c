@@ -249,7 +249,7 @@ void Grammar_CommentAsm(FileDes *pfile)
 				{
 					pcur->i_ID = TOKEN_CCMT;
 					free(pcur->pc_Value);
-					pcur->pc_Value = _strdup("/* ");
+					pcur->pc_Value = GC_STRDUP("/* ");
 
 					/* Concat to parameters each following tokens */
 					pmemo = pcur;
@@ -321,7 +321,7 @@ void Grammar_CommentAsm(FileDes *pfile)
 			{
 				pcur->i_ID = TOKEN_CCMT;
 				free(pcur->pc_Value);
-				pcur->pc_Value = _strdup("/* ");
+				pcur->pc_Value = GC_STRDUP("/* ");
 
 				/* Concat to parameters each following tokens */
 				pmemo = pcur;
@@ -579,7 +579,7 @@ token *Grammar_StmtLevel(FileDes *pfile, token *pcur, int StmtLevel)
 		case TOKEN_LBRACE:
 			/* Extern "C" */
 			pnext = Tool_PrevValid(pcur);
-			if(pnext && !_stricmp(pnext->pc_Value, "\"C\""))
+			if(pnext && !GC_STRICMP(pnext->pc_Value, "\"C\""))
 			{
 				if(Config.IndentExternC)
 				{
@@ -861,7 +861,7 @@ void Grammar_AddVoid(FileDes *pfile)
 			if(pnext == Tool_ToRelationNext(pcur))
 			{
 				Tool_InsertTokenAfter(pfile, pcur, TOKEN_WORD);
-				pcur->pst_Next->pc_Value = _strdup("void");
+				pcur->pst_Next->pc_Value = GC_STRDUP("void");
 				pcur->pst_Next->IsType = 1;
 				pcur->pst_Next->InStmtDecl = 1;
 				pcur->pst_Next->BeginDecl = 1;
@@ -1098,12 +1098,12 @@ void DeclIncludes(FileDes *pfile)
 					gast_Includes[i].i_NumInc++;
 					for(j = 0; j < gast_Includes[i].i_NumIncludeBy; j++)
 					{
-						if(gast_Includes[i].ai_IncludeBy[j] == (int) pfile) break;
+						if(gast_Includes[i].ai_IncludeBy[j] == pfile) break;
 					}
 
 					if(j == gast_Includes[i].i_NumIncludeBy)
 					{
-						gast_Includes[i].ai_IncludeBy[j] = (int) pfile;
+						gast_Includes[i].ai_IncludeBy[j] =  pfile;
 						gast_Includes[i].i_NumIncludeBy++;
 					}
 
@@ -1112,7 +1112,7 @@ void DeclIncludes(FileDes *pfile)
 			}
 
 			gast_Includes[gi_NumIncludes].i_NumInc = 1;
-			gast_Includes[gi_NumIncludes].ai_IncludeBy[0] = (int) pfile;
+			gast_Includes[gi_NumIncludes].ai_IncludeBy[0] = pfile;
 			gast_Includes[gi_NumIncludes].i_NumIncludeBy = 1;
 			gi_NumIncludes++;
 recom: ;

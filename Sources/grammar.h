@@ -49,7 +49,7 @@ typedef struct
 	int		i_NumInc;
 	int		i_DepDir;
 	int		i_Dep;
-	int		ai_IncludeBy[MAX_INCLUDE];
+	FileDes *	ai_IncludeBy[MAX_INCLUDE];
 	int		i_NumIncludeBy;
 } tdst_Include;
 extern tdst_Include gast_Includes[MAX_INCLUDE];

@@ -2355,7 +2355,7 @@ void Indent_SplitDecl(FileDes *pfile)
 				{
 					pnext->i_ID = TOKEN_SEMICOL;
 					free(pnext->pc_Value);
-					pnext->pc_Value = _strdup(";");
+					pnext->pc_Value = GC_STRDUP(";");
 
 					pprev = ptype1;
 					do
@@ -2366,7 +2366,7 @@ void Indent_SplitDecl(FileDes *pfile)
 						memcpy(pnext->pst_Next, pprev, sizeof(token));
 						pnext->pst_Next->pst_Next = ppnext;
 						pnext->pst_Next->pst_Prev = ppprev;
-						pnext->pst_Next->pc_Value = _strdup(pnext->pst_Next->pc_Value);
+						pnext->pst_Next->pc_Value = GC_STRDUP(pnext->pst_Next->pc_Value);
 						pnext = NextToken(pnext);
 						pprev = NextToken(pprev);
 						while(pprev && pprev != ptype2 && (IsAComment(pprev) || pprev->i_ID == TOKEN_STAR))

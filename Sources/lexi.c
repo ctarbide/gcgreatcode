@@ -621,7 +621,7 @@ Zap:
 		/* Set string */
 		mem = *g;
 		*g = 0;
-		pst_Temp->pc_Value = _strdup(pmem);
+		pst_Temp->pc_Value = GC_STRDUP(pmem);
 		*g = mem;
 
 		if(pst_Temp->i_ID == TOKEN_NUMBER)
@@ -686,7 +686,7 @@ Zap:
 				while(*pz_Temp1) *(pz_Temp++) = *(pz_Temp1++);
 				*pz_Temp = 0;
 				free(pst_Temp->pc_Value);
-				pst_Temp->pc_Value = _strdup(az_Tmp);
+				pst_Temp->pc_Value = GC_STRDUP(az_Tmp);
 			}
 
 			indice = IsReservedWord(pfile, pst_Temp);
@@ -724,7 +724,7 @@ Zap:
 				while(*g && *g != '\n') g++;
 				mem = *g;
 				*g = 0;
-				pst_Temp->pc_Value = _strdup(pmem);
+				pst_Temp->pc_Value = GC_STRDUP(pmem);
 				*g = mem;
 			}
 		}
