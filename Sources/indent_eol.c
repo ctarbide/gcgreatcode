@@ -2301,7 +2301,7 @@ void Indent_SplitDecl(FileDes *pfile)
 	/*~~~~~~~~~~~~~~~~~~~~~*/
 	token	*pfirst;
 	token	*pcur;
-	token	*pnext;
+	token	*pnext, *pnext1;
 	token	*pprev;
 	token	*ptype1, *ptype2;
 	token	*ppnext, *ppprev;
@@ -2336,10 +2336,12 @@ void Indent_SplitDecl(FileDes *pfile)
 				pnext = pcur;
 				while(pnext->i_ID != TOKEN_COMMA && pnext->i_ID != TOKEN_SEMICOL)
 				{
-					if(pnext->i_ID == TOKEN_LPAREN) pnext = Tool_ToRelationNext(pnext);
-					if(pnext->i_ID == TOKEN_LARRAY) pnext = Tool_ToRelationNext(pnext);
-					if(pnext->i_ID == TOKEN_LESS) pnext = Tool_ToRelationNext(pnext);
-					if(pnext->i_ID == TOKEN_LBRACE) pnext = Tool_ToRelationNext(pnext);
+					pnext1 = NULL;
+					if(pnext->i_ID == TOKEN_LPAREN) pnext1 = Tool_ToRelationNext(pnext);
+					else if(pnext->i_ID == TOKEN_LARRAY) pnext1 = Tool_ToRelationNext(pnext);
+					else if(pnext->i_ID == TOKEN_LESS) pnext1 = Tool_ToRelationNext(pnext);
+					else if(pnext->i_ID == TOKEN_LBRACE) pnext1 = Tool_ToRelationNext(pnext);
+					if(pnext1) pnext = pnext1;
 					pnext = NextToken(pnext);
 				}
 
