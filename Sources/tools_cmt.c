@@ -187,7 +187,7 @@ void Tool_UnSplitCmt(token *pcur)
 				while(_isspace(*p) || (*p == '*'))
 				{
 					if(p[0] == '*' && p[1] == '/') goto End;
-					if(code)
+					if(code && _isspace(*p))
 						*gn++ = *p++;
 					else
 						p++;
@@ -330,6 +330,7 @@ void Tool_SplitCmtFirstLine(token *pcur)
 	char	first;
 	/*~~~~~~~~~~~~~~~~~~~~*/
 
+	if(pcur->doxygen) return;
 	p = pcur->pc_Value;
 	first = 1;
 
@@ -450,6 +451,7 @@ void Tool_SplitCmtFct(token *pcur, int sep)
 	int		firstCol;
 	int		precmt;
 	int		typespec;
+	int		beg, first1;
 	/*~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	/* FIXME: Flag to decide if the comment is empty?? */
@@ -486,34 +488,57 @@ void Tool_SplitCmtFct(token *pcur, int sep)
 	offset = 0;
 
 	/* Separator */
-	if(Config.CmtSepBreak)
+	if(Config.CmtSepBreak && sep)
+	{
 		*gn++ = '\n';
+		*gn++ = ' ';
+	}
+	else if(Config.CmtFirstLineBreakFirst && !sep)
+	{
+	}
 	else
+	{
 		offset = gn - memo;
-	*gn++ = ' ';
+		*gn++ = ' ';
+	}
 
 	fin = Config.LineLenCmt - (pcur->StmtLevel + pcur->IndentLevel) * Config.TabSize - 1;
-	for(i = offset; i < fin; i++) *gn++ = (char) sep;
+	if(sep)
+	{
+		for(i = offset; i < fin; i++) *gn++ = (char) sep;
+	}
 
 	justaftercateg = 1;
 	isNewAt = 1;
 	typespec = 0;
+	first1 = 1;
 	for(;;)
 	{
 forceeol:
 		*gn++ = '\n';
 		colcur = 0;
-		if(Config.CmtSeparatorStar)
-		{
-			*gn++ = ' ';
-			*gn++ = '*';
-			colcur = 2;
-		}
+		beg = 1;
 
-		for(i = 0; i < coldes; i++)
+		pp1 = p;
+		while(_isspace(*pp1)) pp1++;
+		if(*pp1 == '*' && pp1[1] == '/')
 		{
-			colcur++;
-			*gn++ = ' ';
+			goto End;
+		}
+		else 
+		{
+			if(Config.CmtSeparatorStar || (Config.CmtFirstLineFillStar && !sep) && gn[-1] == '\n')
+			{
+				*gn++ = ' ';
+				*gn++ = '*';
+				colcur = 2;
+			}
+
+			for(i = colcur; i < coldes; i++)
+			{
+				colcur++;
+				*gn++ = ' ';
+			}
 		}
 
 		if(_isspace(*p))
@@ -572,18 +597,46 @@ forceeol:
 				*p2 = ' ';
 				if(!precmt) *p1 = ':';
 				gn--;
-				while(*gn == ' ') gn--;
+				colcur--;
+				while(*gn == ' ') 
+				{
+					colcur--;
+					gn--;
+				}
 				gn++;
+				colcur++;
 				if((gn[-1] != '\n') || !first)
 				{
-					if(gn[-1] != '\n') *gn++ = '\n';
+					if((!beg || (typespec & 1)) && gn[-1] != '\n') 
+					{
+						colcur = 0;
+						*gn++ = '\n';
+						if(Config.CmtSeparatorStar || (Config.CmtFirstLineFillStar && !sep))
+						{
+							*gn++ = ' ';
+							*gn++ = '*';
+							colcur = 2;
+						}
+					}
+
 					memospace = NULL;
 				}
 
-				if(typespec & 1) *gn++ = '\n';
+				if(!first1 && (typespec & 1))
+				{
+					colcur = 0;
+					*gn++ = '\n';
+					if(Config.CmtSeparatorStar || (Config.CmtFirstLineFillStar && !sep))
+					{
+						*gn++ = ' ';
+						*gn++ = '*';
+						colcur = 2;
+					}
+				}
 
 				/* Set first indentation by inserting spaces */
-				for(i = 0; i < Config.TabSize; i++) *gn++ = ' ';
+				first1 = 0;
+				for(i = colcur; i < Config.TabSize; i++) *gn++ = ' ';
 				colcur = Config.TabSize;
 
 				/* Copy the category */
@@ -617,12 +670,23 @@ forceeol:
 				else
 				{
 					*gn++ = '\n';
-					for(i = 0; i < Config.TabSize; i++) *gn++ = ' ';
+					colcur = 0;
+
+					if(Config.CmtSeparatorStar || (Config.CmtFirstLineFillStar && !sep))
+					{
+						*gn++ = ' ';
+						*gn++ = '*';
+						colcur = 2;
+					}
+
+					for(i = colcur; i < Config.TabSize; i++) *gn++ = ' ';
 					colcur = Config.TabSize;
 				}
 
 				while(_isspace(*p)) p++;
 				if(okmotnew != 2) justaftercateg = 1;
+				beg = 0;
+				first1 = 0;
 			}
 			else
 			{
@@ -639,6 +703,7 @@ nomot:
 
 copy:
 				first = 0;
+				first1 = 0;
 				if(colcur < Config.LineLenCmt)
 				{
 					/*$F SWG 12/04/2001 */
@@ -651,6 +716,7 @@ copy:
 						{
 							style = 0;
 re:
+							beg = 0;
 							*gn++ = *p++;
 							colcur++;
 							switch(*p)
@@ -718,6 +784,7 @@ re:
 						}
 						else
 						{
+							if(!_isspace(*p)) beg = 0;
 							*gn++ = *p++;
 							colcur++;
 						}
@@ -750,11 +817,13 @@ re:
 
 			if(colcur >= Config.LineLenCmt)
 			{
+				if(typespec & 2) coldes = Config.TabSize;
 				if(memospace)
 				{
 					gn -= (p - memospace);
 					p = memospace;
 				}
+
 				break;
 			}
 
@@ -772,18 +841,25 @@ re:
 	}
 
 End:
-	gn--;
-	while(*gn == ' ') gn--;
-	gn++;
-	if(gn[-1] != '\n') *gn++ = '\n';
-	*gn++ = ' ';
+	if(!beg || sep)
+	{
+		gn--;
+		while(*gn == ' ') gn--;
+		gn++;
+		if(gn[-1] != '\n') *gn++ = '\n';
+	}
 
-	offset = 0;
-	if((!Config.CmtSepBreak) && (pcur->CppComment) && (Config.CmtKeepCpp)) offset = 2;
-	for(i = offset; i < Config.LineLenCmt - (pcur->StmtLevel + pcur->IndentLevel) * Config.TabSize - 1; i++)
-		*gn++ = (char) sep;
+	if(sep)
+	{
+		*gn++ = ' ';
+		offset = 0;
+		if((!Config.CmtSepBreak) && (pcur->CppComment) && (Config.CmtKeepCpp)) offset = 2;
+		for(i = offset; i < Config.LineLenCmt - (pcur->StmtLevel + pcur->IndentLevel) * Config.TabSize - 1; i++)
+			*gn++ = (char) sep;
 
-	if(Config.CmtSepBreak) *gn++ = '\n';
+		if(Config.CmtSepBreak) *gn++ = '\n';
+	}
+
 	*gn++ = ' ';
 	*gn++ = '*';
 	*gn++ = '/';

@@ -52,8 +52,8 @@ char		*gargv[MAX_DEF_PARAMS];
 tdst_Config Config;
 tdst_Config Config1;
 
-char		*gz_LstFileName = "GC.lst";
-char		*gz_CfgFileName = "GC.cfg";
+char		gz_LstFileName[1024] = "GC.lst";
+char		gz_CfgFileName[1024] = "GC.cfg";
 char		*gz_FixmeComment = "/* */";
 
 /*

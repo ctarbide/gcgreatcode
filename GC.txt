@@ -2,12 +2,10 @@
 
 
         GC GreatCode
-        Christophe Beaudet (1998)
+        Original source code by Christophe Beaudet (1998)
+        cbeaudet@club-internet.fr
 
-        GC Version 1.139
-
-        email:      cbeaudet@club-internet.fr
-        homepage:   http://perso.club-internet.fr/cbeaudet
+        GC Version 1.140
 
         The author declines responsability for bad results, corrupted source files
         and so on... You must backup your files before using GC on them.
@@ -2682,12 +2680,20 @@ no-output_test- (DEFAULT)
 -no-cmt_doxygen-   
 ===============================================================================
 
-        Enable the doxygen comment style.
-        Example :
+        Enable the doxygen/javadoc comment style.
 
         /** comment */
         /*! comment */
         /*!< comment */
+
+		You can use -cmt_fct_categ- option to set some special doxygen commands
+		to be indent, so that GC will recognize them.
+
+		-cmt_fct_categ_in-@param
+		-cmt_fct_categ-\return
+
+		See option(s) :
+		-cmt_fct_categ-
 
 
 
@@ -2839,12 +2845,18 @@ no-output_test- (DEFAULT)
 		bit 1	=>		Force an EOL after the categ word.
 		bit 2	=>		Try to keep EOL and blanks until reached another word.
 
+		NOTE
+		----
+		For a doxygen/jadadoc special first line comment, words defined with
+		-cmt_fct_categ- are used, even if it's not a function comment.
+		A doxygen/jadadoc is of the form : /** pr /*! or /// or //!
+
         Example :
 
         options
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        -cmt_fct_categ-description;2	(EOL after)
+        -cmt_fct_categ-Description;2	(EOL after)
         -cmt_fct_categ-\return;1		(blank line before)
         -cmt_fct_categ_in-@param
         -cmt_fct_categ_in-@code;6		(EOL after + keep inside)
@@ -2853,7 +2865,15 @@ no-output_test- (DEFAULT)
         before
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        /* Description: Description of the function. \return none
+        /** doxygen comment. Description: Description of the function. 
+		\return none     
+		@code
+		int a;
+		
+		int b; 
+		*/
+
+        /* @escription Description of the function. \return none
         @param a - entering value @param b - increment value
 		@code
 		int a;
@@ -2868,7 +2888,18 @@ no-output_test- (DEFAULT)
         after
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        /*
+        /**
+         * Description:
+	     * Description of the function.
+         * 
+         * \return	none
+		 * @code
+		 * int a;
+         * 
+		 * int b;
+         */
+
+		/*
          ==========================================
          Description:
 		 Description of the function.

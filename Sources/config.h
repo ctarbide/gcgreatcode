@@ -241,8 +241,8 @@ EXTERN int	gi_NumReplace;
 EXTERN char *gapsz_FileInsert[MAX_DEF_FILEINSERT];
 EXTERN int	gi_NumFileInsert;
 
-extern char *gz_LstFileName;
-extern char *gz_CfgFileName;
+extern char gz_LstFileName[1024];
+extern char gz_CfgFileName[1024];
 extern char *gz_FixmeComment;
 
 /*$2

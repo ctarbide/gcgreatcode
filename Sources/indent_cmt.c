@@ -348,7 +348,7 @@ void Indent_CmtBase(FileDes *pfile)
 				continue;
 			}
 
-			if((pcur->i_ID == TOKEN_CCMT) && (!pcur->EmptyCmt))
+			if((pcur->i_ID == TOKEN_CCMT) && (!pcur->EmptyCmt) && (!pcur->doxygen))
 			{
 				if(FixedComment(pcur)) goto zap;
 				pnext = pcur->pst_Next;
@@ -358,6 +358,7 @@ void Indent_CmtBase(FileDes *pfile)
 					if(FixedComment(pcur->pst_Next)) goto zap;
 					if(pcur->CmtLevel) goto zap;
 					if(pcur->pst_Next->CmtLevel) goto zap;
+					if(pcur->pst_Next->doxygen) goto zap;
 					if(!FirstOnLine(pcur))
 					{
 						if(!pcur->pst_Prev || pcur->pst_Prev->i_ID != TOKEN_LBRACE) goto zap;
@@ -746,7 +747,7 @@ void Indent_CmtCommentFirstLine(FileDes *pfile)
 		}
 
 		/* Struct */
-		pnext = Tool_NextValid(pcur);
+		pnext = pcur->pst_Next;
 		pnext1 = Tool_NextValid(pnext);
 		if(Config.AutoSepStruct)
 		{
@@ -775,7 +776,7 @@ void Indent_CmtCommentFirstLine(FileDes *pfile)
 		}
 
 		/* Class */
-		pnext = Tool_NextValid(pcur);
+		pnext = pcur->pst_Next;
 		if(Config.AutoSepClass)
 		{
 			if
@@ -859,6 +860,11 @@ void Indent_CmtCommentFirstLine(FileDes *pfile)
 				while(pcur->InFctDef || pcur->InFctDecl) pcur = NextToken(pcur);
 				continue;
 			}
+		}
+
+		if(pcur->doxygen)
+		{
+			Tool_SplitCmtFct(pcur, 0);
 		}
 
 		/* Split comment without mark */
