@@ -628,29 +628,39 @@ int Tool_ToTab(int tab)
  =======================================================================================================================
  =======================================================================================================================
  */
-char Tool_IsSpecialWord(char *p, int *type)
+char Tool_IsSpecialWord(char *p, int *type, int *column)
 {
 	/*~~~~~~~~~~~~~~~~*/
 	int		i;
 	char	az_cpy[255];
 	char	*pz;
 	int		typespec;
+	int		col;
 	/*~~~~~~~~~~~~~~~~*/
 
 	for(i = 0; i < gi_NumCmtCateg; i++)
 	{
-		typespec = 0;
+		typespec = col = 0;
 		strcpy(az_cpy, gast_CmtCateg[i].mpsz_Name);
-		pz = strrchr(az_cpy, ';');
+		pz = strchr(az_cpy, ';');
 		if(pz) 
 		{
+			/* Type */
 			*pz = 0;
 			typespec = atoi(pz + 1);
+
+			/* Align column */
+			pz = strchr(pz + 1, ';');
+			if(pz)
+			{
+				col = atoi(pz + 1);
+			}
 		}
 
 		if(!strcmp(p, az_cpy)) 
 		{
 			*type = typespec;
+			*column = col;
 			return (char) gast_CmtCateg[i].mi_Type;
 		}
 	}

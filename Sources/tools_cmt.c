@@ -1,4 +1,4 @@
-/*$T tools_cmt.c GC 1.140 12/25/04 21:04:25 */
+/*$T tools_cmt.c GC 1.140 12/28/04 09:46:42 */
 
 
 /*$6
@@ -137,6 +137,7 @@ void Tool_UnSplitCmt(token *pcur)
 	int		style;
 	char	cmem;
 	int		typespec;
+	int		column;
 	int		code;
 	/*~~~~~~~~~~~~~*/
 
@@ -146,7 +147,7 @@ void Tool_UnSplitCmt(token *pcur)
 	if(FixedComment(pcur)) return;
 
 	/* Allocate for the new comment */
-	memo = (char *) __malloc__(strlen(p) + 4);
+	memo = (char *) __malloc__(strlen(p) * 8);
 
 	/* Begin mark */
 	gn = memo;
@@ -184,10 +185,11 @@ void Tool_UnSplitCmt(token *pcur)
 		{
 			if(*p == '\n')
 			{
+				if(code) *gn++ = *p++;
 				while(_isspace(*p) || (*p == '*'))
 				{
 					if(p[0] == '*' && p[1] == '/') goto End;
-					if(code && _isspace(*p))
+					if(code && *p == '\n')
 						*gn++ = *p++;
 					else
 						p++;
@@ -195,10 +197,8 @@ void Tool_UnSplitCmt(token *pcur)
 				break;
 			}
 
-			if(code)
-				*gn++ = *p++;
-			else
-				p++;
+			if(code) *gn++ = ' ';
+			p++;
 		}
 
 		/* Handle marks at the end of the line, assume this is a box comment */
@@ -226,7 +226,7 @@ void Tool_UnSplitCmt(token *pcur)
 				while(Lisword(*p1) || *p1 == '\\' || *p1 == '@') p1++;
 				cmem = *p1;
 				*p1 = 0;
-				if(Tool_IsSpecialWord(p, &typespec))
+				if(Tool_IsSpecialWord(p, &typespec, &column))
 				{
 					if(typespec & 4)
 						code = 1;
@@ -278,7 +278,7 @@ re:
 		}
 
 		/* Copy one space */
-		if(gn[-1] != ' ') *gn++ = ' ';
+		if(!code && gn[-1] != ' ') *gn++ = ' ';
 	}
 
 End:
@@ -450,7 +450,7 @@ void Tool_SplitCmtFct(token *pcur, int sep)
 	int		isNewAt;
 	int		firstCol;
 	int		precmt;
-	int		typespec;
+	int		typespec, column;
 	int		beg, first1;
 	/*~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -525,7 +525,7 @@ forceeol:
 		{
 			goto End;
 		}
-		else 
+		else
 		{
 			if(Config.CmtSeparatorStar || (Config.CmtFirstLineFillStar && !sep) && gn[-1] == '\n')
 			{
@@ -553,7 +553,7 @@ forceeol:
 		for(;;)
 		{
 			p1 = p;
-			if(*p == Config.CharSplit)
+			if(*p == Config.CharSplit && !(typespec & 4))
 			{
 				*gn++ = *p++;
 				p1 = p;
@@ -590,7 +590,7 @@ forceeol:
 				mem = *p1;
 				*p1 = 0;
 				lenw = lew1 = strlen(p);
-				okmotnew = Tool_IsSpecialWord(p, &typespec);
+				okmotnew = Tool_IsSpecialWord(p, &typespec, &column);
 				if(p2 != p1) *p2 = ':';
 				*p1 = mem;
 				if(!okmotnew) goto nomot;
@@ -598,16 +598,17 @@ forceeol:
 				if(!precmt) *p1 = ':';
 				gn--;
 				colcur--;
-				while(*gn == ' ') 
+				while(*gn == ' ')
 				{
 					colcur--;
 					gn--;
 				}
+
 				gn++;
 				colcur++;
 				if((gn[-1] != '\n') || !first)
 				{
-					if((!beg || (typespec & 1)) && gn[-1] != '\n') 
+					if((!beg || (typespec & 1)) && gn[-1] != '\n')
 					{
 						colcur = 0;
 						*gn++ = '\n';
@@ -655,11 +656,16 @@ forceeol:
 				/* Add spaces to indent text of category */
 				if(!(typespec & 2))
 				{
-					coldes = Tool_ToTab(colcur);
-					if(coldes == colcur)
-						coldes += Config.TabSize;
-					else if(lenw < Config.TabSize)
-						coldes += Config.TabSize;
+					if(column)
+						coldes = column;
+					else
+					{
+						coldes = Tool_ToTab(colcur);
+						if(coldes == colcur)
+							coldes += Config.TabSize;
+						else if(lenw < Config.TabSize)
+							coldes += Config.TabSize;
+					}
 
 					for(i = colcur; i < coldes; i++)
 					{
@@ -707,7 +713,7 @@ copy:
 				if(colcur < Config.LineLenCmt)
 				{
 					/*$F SWG 12/04/2001 */
-					while(!Lisword(*p) && !_isspace(*p) && *p != Config.CharSplit)
+					while(!Lisword(*p) && !_isspace(*p) && (*p != Config.CharSplit || (typespec & 4)))
 					{
 						if(p[0] == '*' && p[1] == '/') goto End;
 
@@ -792,7 +798,7 @@ re:
 				}
 
 				/* Keeping EOL */
-				if(*p == '\n') 
+				if(*p == '\n')
 				{
 					if(typespec & 2) coldes = Config.TabSize;
 					goto forceeol;
@@ -803,7 +809,7 @@ re:
 				{
 					while(_isspace(*p) && *p != '\n')
 					{
-						if(!_isspace(gn[-1]))
+						if(!_isspace(gn[-1]) || (typespec & 4))
 						{
 							memospace = p;
 							*gn++ = *p++;
@@ -823,7 +829,6 @@ re:
 					gn -= (p - memospace);
 					p = memospace;
 				}
-
 				break;
 			}
 
@@ -1010,7 +1015,7 @@ void Tool_InCmt(token *pcur)
 	int		precmt;
 	char	cmem1;
 	int		spew;
-	int		typespec;
+	int		typespec, column;
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	inumpar = 0;
@@ -1038,7 +1043,7 @@ void Tool_InCmt(token *pcur)
 			{
 				cmem1 = *p;
 				*p = 0;
-				res = Tool_IsSpecialWord(memin, &typespec);
+				res = Tool_IsSpecialWord(memin, &typespec, &column);
 				if(res == 2)
 				{
 					lenin = strlen(memin) + 1;
@@ -1095,6 +1100,7 @@ another:
 	tmp = colcur;
 	if(lenin < Config.TabSize) tmp += Config.TabSize;
 	tmp = Tool_ToTab(tmp);
+	if(column) tmp = column;
 	while(colcur != tmp)
 	{
 		*gn++ = ' ';
@@ -1149,7 +1155,7 @@ another:
 					break;
 				}
 
-				spew = Tool_IsSpecialWord(p, &typespec);
+				spew = Tool_IsSpecialWord(p, &typespec, &column);
 				if(spew && (cmem == ':' || *p == '\\' || *p == '@'))
 				{
 					if(spew == 2) lenin = strlen(p);
@@ -1193,7 +1199,7 @@ another:
 					if(gn[-1] != '\n') *gn++ = '\n';
 					memospace = NULL;
 					colcur = 0;
-					while(colcur != tmp)
+					while(colcur < tmp)
 					{
 						*gn++ = ' ';
 						colcur++;

@@ -71,7 +71,7 @@ extern void		Tool_ForceEmptyLineBefore(token *);
 extern void		Tool_SetFlag(token *, token *, char *, char);
 extern void		Tool_IncIndentLevel(token *, token *, int);
 extern int		Tool_ToTab(int);
-extern char		Tool_IsSpecialWord(char *, int *);
+extern char		Tool_IsSpecialWord(char *, int *, int *);
 
 /*$2
  -----------------------------------------------------------------------------------------------------------------------
