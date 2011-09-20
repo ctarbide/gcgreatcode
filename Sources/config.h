@@ -27,7 +27,11 @@
 #define GC_STRICMP _stricmp
 #define GC_UNLINK _unlink
 #define GC_ACCESS _access
+
+#ifdef _S_IWRITE
 enum { GC_ACCESS_WRITE_OK=2, GC_S_IWRITE=_S_IWRITE };
+#endif
+
 #define GC_CHMOD _chmod
 #define GC_STRDATE _strdate
 #define GC_STRTIME _strtime
@@ -50,7 +54,6 @@ enum { GC_ACCESS_WRITE_OK=W_OK, GC_S_IWRITE=S_IWUSR };
 
 #endif
 
-#include <stdio.h>
 #ifndef _MAX_PATH
 #ifdef PATH_MAX
 #define _MAX_PATH PATH_MAX
