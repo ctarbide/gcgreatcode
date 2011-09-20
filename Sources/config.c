@@ -14,17 +14,20 @@
     e-mail: cbeaudet@club-internet.fr
     *****************************************************************************************
  */
-#include "string.h"
-#include "stdlib.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #ifndef __APPLE__
-#include "malloc.h"
+#include <malloc.h>
 #endif
-#include "stdio.h"
+#include <ctype.h>
+
+#define CONFIG_GLOB			/* generate the global instances of items within config.h (instead of defining them as external */
 #include "config.h"
 #include "in.h"
 #include "error.h"
-#include "ctype.h"
 #include "tools.h"
+#include "os.h"
 
 /*$2
  -----------------------------------------------------------------------------------------------------------------------

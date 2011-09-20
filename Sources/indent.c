@@ -14,12 +14,14 @@
     e-mail: cbeaudet@club-internet.fr
     *****************************************************************************************
  */
-#include "ctype.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #ifndef __APPLE__
-#include "malloc.h"
+#include <malloc.h>
 #endif
-#include "stdlib.h"
-#include "string.h"
+#include <ctype.h>
+
 #include "config.h"
 #include "in.h"
 #include "grammar.h"
@@ -269,17 +271,17 @@ void Indent(FileDes *pfile)
 	Indent_EOLBetweenEmptyBraces(pfile);
 	Indent_EOLAfterEveryCloseBrace(pfile);
 
-	/* Set spaces depending on stmt and indent level */
+	/* Set spaces depending on statement and indent level */
 	Indent_StmtIndentLevel(pfile);
 
-	/* Add breaklines in pp */
+	/* Add break lines in pp */
 	Indent_ForceBreakLine(pfile);
 	Indent_AlignBreakLine(pfile);
 
-	/* Remove excedent empty lines */
+	/* Remove extra empty lines */
 	Indent_RemoveExLines(pfile);
 
-	/* Handle function defintion parameters */
+	/* Handle function definition parameters */
 	Indent_CmtFctDefParms(pfile);
 	Indent_FixupTrailingComments(pfile);
 	Indent_RetrospectiveElseAdjustment(pfile);

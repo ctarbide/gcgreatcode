@@ -14,18 +14,28 @@
     e-mail: cbeaudet@club-internet.fr
     *****************************************************************************************
  */
-#include "ctype.h"
-#include "stdlib.h"
-#include "tools.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #ifndef __APPLE__
-#include "malloc.h"
+#include <malloc.h>
 #endif
-#include "stdio.h"
+#include <ctype.h>
+
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <sys/types.h>
+#include <sys/stat.h> /* for stat() */ 
+#include <dirent.h>
+#endif
+
+#include "tools.h"
 #include "config.h"
-#include "string.h"
 #include "in.h"
 #include "error.h"
 #include "lexi.h"
+#include "os.h"
 
 /*$2
  -----------------------------------------------------------------------------------------------------------------------

@@ -14,13 +14,14 @@
     e-mail: cbeaudet@club-internet.fr
     *****************************************************************************************
  */
-#include "ctype.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #ifndef __APPLE__
-#include "malloc.h"
+#include <malloc.h>
 #endif
-#include "stdlib.h"
-#include "string.h"
-#include "stdio.h"
+#include <ctype.h>
+
 #include "config.h"
 #include "in.h"
 #include "grammar.h"
@@ -29,6 +30,7 @@
 #include "tools.h"
 #include "indent.h"
 #include "debug.h"
+#include "os.h"
 
 /*
  =======================================================================================================================
@@ -254,7 +256,7 @@ void Indent_CmtBase(FileDes *pfile)
 		}
 	}
 
-	/* Unsplit all comments */
+	/* UnSplit all comments */
 	for(pcur = pfile->pst_RootToken; pcur; pcur = NextToken(pcur))
 	{
 		if(pcur->NoIndent) continue;
@@ -706,7 +708,6 @@ void Indent_CmtCommentFirstLine(FileDes *pfile)
 			}
 		}
 
-		/*$T indent_cmt.c GC 1.139 12/16/04 22:47:56 */
 		if((pcur->pc_Value[2] == CMTMARK) && (pcur->pc_Value[3] == 'T'))
 		{
 			pcur->CmtIndent = 1;

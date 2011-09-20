@@ -14,16 +14,23 @@
     e-mail: cbeaudet@club-internet.fr
     *****************************************************************************************
  */
-#include "stdio.h"
-#include "string.h"
-#include "sys/stat.h"
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#ifdef _WIN32
+#include <sys/stat.h>
+#include <io.h>
+#else
+#include <sys/stat.h>
+#endif
+
 #include "config.h"
 #include "in.h"
 #include "lexi.h"
 #include "error.h"
 #include "tools.h"
+#include "os.h"
 
 /*$4
  ***********************************************************************************************************************

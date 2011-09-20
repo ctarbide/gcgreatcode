@@ -14,12 +14,13 @@
     e-mail: cbeaudet@club-internet.fr
     *****************************************************************************************
  */
-#include "ctype.h"
+#include <stdio.h>
+#include <string.h>
 #ifndef __APPLE__
-#include "malloc.h"
+#include <malloc.h>
 #endif
-#include "string.h"
-#include "stdio.h"
+#include <ctype.h>
+
 #include "config.h"
 #include "lexi.h"
 #include "error.h"

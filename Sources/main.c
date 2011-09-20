@@ -14,14 +14,19 @@
     e-mail: cbeaudet@club-internet.fr
     *****************************************************************************************
  */
-#include "string.h"
-#include "stdlib.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #ifndef __APPLE__
-#include "malloc.h"
+#include <malloc.h>
 #endif
-#include "ctype.h"
-#include "stdio.h"
-#define CONFIG_GLOB
+#include <ctype.h>
+
+#ifdef _WIN32
+#include <direct.h>
+#else
+#endif
+
 #include "config.h"
 #include "in.h"
 #include "out.h"
@@ -31,11 +36,7 @@
 #include "indent.h"
 #include "tools.h"
 #include "debug.h"
-
-/*$4
- ***********************************************************************************************************************
- ***********************************************************************************************************************
- */
+#include "os.h"
 
 /*
  =======================================================================================================================
