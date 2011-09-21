@@ -110,11 +110,11 @@ void TokenString(token *pcur)
 {
 	switch(pcur->i_ID)
 	{
-	case TOKEN_BREAKLINE:	pcur->pc_Value = GC_STRDUP("\\"); break;
-	case TOKEN_LBRACE:		pcur->pc_Value = GC_STRDUP("{"); break;
-	case TOKEN_RBRACE:		pcur->pc_Value = GC_STRDUP("}"); break;
-	case TOKEN_LPAREN:		pcur->pc_Value = GC_STRDUP("("); break;
-	case TOKEN_RPAREN:		pcur->pc_Value = GC_STRDUP(")"); break;
+	case TOKEN_BREAKLINE:	pcur->pc_Value = strdup("\\"); break;
+	case TOKEN_LBRACE:		pcur->pc_Value = strdup("{"); break;
+	case TOKEN_RBRACE:		pcur->pc_Value = strdup("}"); break;
+	case TOKEN_LPAREN:		pcur->pc_Value = strdup("("); break;
+	case TOKEN_RPAREN:		pcur->pc_Value = strdup(")"); break;
 	}
 
 	if(pcur->ForceEOLAfter) pcur->ForceEOLAfter = 1;

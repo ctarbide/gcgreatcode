@@ -1154,7 +1154,7 @@ another:
 			*memin = 0;
 			for(i = 0; i < inumpar; i++)
 			{
-				if(!paramsseen[i] && !GC_STRICMP(p, params[i]))
+				if(!paramsseen[i] && !strcasecmp(p, params[i]))
 				{
 					paramsseen[i] = 1;
 					break;
@@ -1410,31 +1410,34 @@ void Tool_AddTag(FileDes *pfile, token *pcur)
 {
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 	char	*p;
-	char	*memo;
-	char	asz_Temp[128], *psz_Temp;
+	char	*file_name;
+	char the_date[64];
+	char the_line[128];
+	
+	time_t now;
+	struct tm *now_tm;
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	p = pcur->pc_Value;
 	if(p[2] != CMTMARK || p[3] != 'T') return;
-	memo = (char *) __malloc__(512);
-	memo[0] = '/';
-	memo[1] = '*';
-	memo[2] = CMTMARK;
-	memo[3] = 'T';
-	memo[4] = ' ';
-	psz_Temp = strrchr(pfile->psz_FileName, '\\');
-	if(!psz_Temp)
-		sprintf(&memo[5], pfile->psz_FileName);
-	else
-		sprintf(&memo[5], psz_Temp + 1);
-	strcat(memo, " GC");
-	sprintf(memo, "%s %d.%03d ", memo, VERSION, REVISION);
-	strcat(memo, GC_STRDATE(asz_Temp));
-	strcat(memo, " ");
-	strcat(memo, GC_STRTIME(asz_Temp));
-	strcat(memo, " */");
+
+	file_name = strrchr(pfile->psz_FileName, DIR_SEPARATOR);
+	if(file_name == NULL)
+		file_name = pfile->psz_FileName;
+
+    now = time(NULL);
+    now_tm = localtime(&now);
+#ifdef _WIN32
+	strftime(the_date, 64, "%Y-%m-%d %H:%M:%S", now_tm);
+#else
+	strftime(the_date, 64, "%F %T", now_tm);
+#endif
+	
+	sprintf(the_line, "/*%cT %s GC %d.%03d %s */", CMTMARK, file_name, VERSION, REVISION, the_date);
+
+
 	free(pcur->pc_Value);
-	pcur->pc_Value = memo;
+	pcur->pc_Value = strdup(the_line);
 }
 
 /*
@@ -1453,7 +1456,7 @@ token *Tool_AddEmpty(FileDes *pfile, token *pcur, char *val, int level, int subi
 	Tool_InsertTokenBefore(pfile, pcur, TOKEN_CCMT);
 	pprev = PrevToken(pcur);
 	pprev->i_SubID = subid;
-	pprev->pc_Value = GC_STRDUP(val);
+	pprev->pc_Value = strdup(val);
 	if(pprev->pst_Prev && pcur->In_PP_Define)
 		pprev->InPP = pprev->pst_Prev->InPP;
 	else
@@ -1486,7 +1489,7 @@ token *Tool_AddEmptyCmtAfterIfMissing(FileDes *pfile, token *pcur)
 		pprev = pcur;
 		pcur = Tool_InsertTokenAfter(pfile, pcur, TOKEN_CCMT);
 		pcur->i_SubID = TOKEN_W_CMT_FUNC_PARAM;
-		pcur->pc_Value = GC_STRDUP(gz_FixmeComment);
+		pcur->pc_Value = strdup(gz_FixmeComment);
 		pcur->CppComment = 0;
 		pcur->EndDecl = 0;
 		pprev->ForceEOLAfter = 0;

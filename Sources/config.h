@@ -19,6 +19,8 @@
 
 /*  Begin OS specific options */
 
+/*
+
 #ifdef WIN32
 
 #include "io.h"
@@ -38,8 +40,8 @@ enum { GC_ACCESS_WRITE_OK=2, GC_S_IWRITE=_S_IWRITE };
 
 #else
 
-#include <sys/types.h> /* for chmod */
-#include <sys/stat.h> /* for stat() */
+#include <sys/types.h> // for chmod 
+#include <sys/stat.h> // for stat() 
 #include <unistd.h>
 #include <dirent.h> //POSIX COMPLIANT
 
@@ -61,6 +63,9 @@ enum { GC_ACCESS_WRITE_OK=W_OK, GC_S_IWRITE=S_IWUSR };
 #define _MAX_PATH 4096
 #endif
 #endif
+
+*/
+
 /*  End OS specific options */
 
 #ifdef CONFIG_GLOB

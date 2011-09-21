@@ -61,17 +61,18 @@ int		gi_NumIncludesDirs = 0;
 
 /*
  =======================================================================================================================
+ Find if the given name is found within the table
  =======================================================================================================================
  */
-char c_IsPresent(char *name, char **tab, int size)
+char c_IsPresent(char *name, char **table, int table_entries)
 {
 	/*~~*/
 	int i;
 	/*~~*/
 
-	for(i = 0; i < size; i++)
+	for(i = 0; i < table_entries; i++)
 	{
-		if(!GC_STRICMP(name, tab[i])) return 1;
+		if(!strcasecmp (name, table[i])) return 1;
 	}
 
 	return 0;
@@ -206,15 +207,15 @@ FILE *MOpenFileRec(char *path, char *file)
 		{
 			if(st_FileInfo.attrib == _A_SUBDIR)
 			{
-				if(!GC_STRICMP(st_FileInfo.name, ".")) continue;
-				if(!GC_STRICMP(st_FileInfo.name, "..")) continue;
+				if(!strcasecmp (st_FileInfo.name, ".")) continue;
+				if(!strcasecmp (st_FileInfo.name, "..")) continue;
 				sprintf(asz_Temp, "%s/%s", path, st_FileInfo.name);
 				h = MOpenFileRec(asz_Temp, file);
 				if(h) return h;
 			}
 			else
 			{
-				if(!GC_STRICMP(file, st_FileInfo.name))
+				if(!strcasecmp (file, st_FileInfo.name))
 				{
 					sprintf(asz_Temp, "%s/%s", path, st_FileInfo.name);
 					h = fopen(asz_Temp, "rt");
@@ -242,15 +243,15 @@ FILE *MOpenFileRec(char *path, char *file)
         stat(d->d_name, &stat_buf);
         if(S_ISDIR(stat_buf.st_mode))
         {
-          if(!GC_STRICMP(d->d_name, ".")) continue;
-          if(!GC_STRICMP(d->d_name, "..")) continue;
+          if(!strcasecmp(d->d_name, ".")) continue;
+          if(!strcasecmp(d->d_name, "..")) continue;
           sprintf(asz_Temp, "%s/%s", path, d->d_name);
           h = MOpenFileRec(asz_Temp, file);
           if(h) return h;
         }
         else
         {
-          if(!GC_STRICMP(file, d->d_name))
+          if(!strcasecmp(file, d->d_name))
           {
 						sprintf(asz_Temp, "%s/%s", path, d->d_name);
 						h = fopen(asz_Temp, "rt");
@@ -379,20 +380,20 @@ void CreateFile(char *_psz_FileName)
 
 	if
 	(
-		(GC_STRICMP(psz_Temp, "c"))
-	&&	(GC_STRICMP(psz_Temp, "cpp"))
-	&&	(GC_STRICMP(psz_Temp, "cxx"))
-	&&	(GC_STRICMP(psz_Temp, "h"))
-	&&	(GC_STRICMP(psz_Temp, "hxx"))
-	&&	(GC_STRICMP(psz_Temp, "hpp"))
-	&&	(GC_STRICMP(psz_Temp, "java"))
-	&&	(GC_STRICMP(psz_Temp, "inc"))
-	&&	(GC_STRICMP(psz_Temp, "cs"))
+		(strcasecmp (psz_Temp, "c"))
+	&&	(strcasecmp (psz_Temp, "cpp"))
+	&&	(strcasecmp (psz_Temp, "cxx"))
+	&&	(strcasecmp (psz_Temp, "h"))
+	&&	(strcasecmp (psz_Temp, "hxx"))
+	&&	(strcasecmp (psz_Temp, "hpp"))
+	&&	(strcasecmp (psz_Temp, "java"))
+	&&	(strcasecmp (psz_Temp, "inc"))
+	&&	(strcasecmp (psz_Temp, "cs"))
 	) return;
 
 	/* First init file in array */
 	memset(&gpst_Files[gi_NumFiles], 0, sizeof(FileDes));
-	gpst_Files[gi_NumFiles].psz_FileName = GC_STRDUP(_psz_FileName);
+	gpst_Files[gi_NumFiles].psz_FileName = strdup(_psz_FileName);
 
 	/* One more gloal file */
 	gi_NumFiles++;
@@ -426,8 +427,8 @@ void CreateFilesInDir(char *_psz_Path)
 			/* One dir has been detected. Recurse call except for "." and ".." */
 			if(st_FileInfo.attrib & _A_SUBDIR)
 			{
-				if(!GC_STRICMP(st_FileInfo.name, ".")) continue;
-				if(!GC_STRICMP(st_FileInfo.name, "..")) continue;
+				if(!strcasecmp(st_FileInfo.name, ".")) continue;
+				if(!strcasecmp(st_FileInfo.name, "..")) continue;
 				if(!c_IsPresent(asz_Temp, gpsz_ExcludeDirs, gi_NumExcludeDirs)) CreateFilesInDir(asz_Temp);
 			}
 
@@ -458,8 +459,8 @@ void CreateFilesInDir(char *_psz_Path)
       /* One dir has been detected. Recurse call except for "." and ".." */
       if(S_ISDIR(stat_buf.st_mode))
       {
-        if(!GC_STRICMP(d->d_name, ".")) continue;
-        if(!GC_STRICMP(d->d_name, "..")) continue;
+        if(!strcasecmp(d->d_name, ".")) continue;
+        if(!strcasecmp(d->d_name, "..")) continue;
         if(!c_IsPresent(asz_Temp, gpsz_ExcludeDirs, gi_NumExcludeDirs)) CreateFilesInDir(asz_Temp);
       }
       /* One file has been detected. Add it to bigfile */

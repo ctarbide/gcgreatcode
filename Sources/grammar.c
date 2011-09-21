@@ -253,7 +253,7 @@ void Grammar_CommentAsm(FileDes *pfile)
 				{
 					pcur->i_ID = TOKEN_CCMT;
 					free(pcur->pc_Value);
-					pcur->pc_Value = GC_STRDUP("/* ");
+					pcur->pc_Value = strdup("/* ");
 
 					/* Concat to parameters each following tokens */
 					pmemo = pcur;
@@ -325,7 +325,7 @@ void Grammar_CommentAsm(FileDes *pfile)
 			{
 				pcur->i_ID = TOKEN_CCMT;
 				free(pcur->pc_Value);
-				pcur->pc_Value = GC_STRDUP("/* ");
+				pcur->pc_Value = strdup("/* ");
 
 				/* Concat to parameters each following tokens */
 				pmemo = pcur;
@@ -583,7 +583,7 @@ token *Grammar_StmtLevel(FileDes *pfile, token *pcur, int StmtLevel)
 		case TOKEN_LBRACE:
 			/* Extern "C" */
 			pnext = Tool_PrevValid(pcur);
-			if(pnext && !GC_STRICMP(pnext->pc_Value, "\"C\""))
+			if(pnext && !strcasecmp (pnext->pc_Value, "\"C\""))
 			{
 				if(Config.IndentExternC)
 				{
@@ -865,7 +865,7 @@ void Grammar_AddVoid(FileDes *pfile)
 			if(pnext == Tool_ToRelationNext(pcur))
 			{
 				Tool_InsertTokenAfter(pfile, pcur, TOKEN_WORD);
-				pcur->pst_Next->pc_Value = GC_STRDUP("void");
+				pcur->pst_Next->pc_Value = strdup("void");
 				pcur->pst_Next->IsType = 1;
 				pcur->pst_Next->InStmtDecl = 1;
 				pcur->pst_Next->BeginDecl = 1;

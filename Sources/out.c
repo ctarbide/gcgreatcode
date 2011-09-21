@@ -187,7 +187,7 @@ void WriteFile(FileDes *pfile)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	if(!Config.CanOut) return;
-	if(GC_ACCESS(pfile->psz_FileName, GC_ACCESS_WRITE_OK) && !Config.OutTest)
+	if(access(pfile->psz_FileName, 2) && !Config.OutTest)
 	{
 		if(Config.ReadOnly)
 		{
@@ -202,18 +202,18 @@ void WriteFile(FileDes *pfile)
 	/* Save current file with .bak extension */
 	strcpy(asz_Temp, pfile->psz_FileName);
 	strcat(asz_Temp, ".bak");
-	if(GC_ACCESS(asz_Temp, GC_ACCESS_WRITE_OK)) GC_CHMOD(asz_Temp, GC_S_IWRITE);
-	GC_UNLINK(asz_Temp);
+	if(access(asz_Temp, 2)) chmod(asz_Temp, S_IWRITE | S_IREAD);
+	unlink(asz_Temp);
 	if(Config.CanBak)
 	{
 		if(rename(pfile->psz_FileName, asz_Temp))
 		{
-			if(GC_ACCESS(pfile->psz_FileName, GC_ACCESS_WRITE_OK)) GC_CHMOD(pfile->psz_FileName, GC_S_IWRITE);
+			if(access(pfile->psz_FileName, 2)) chmod(pfile->psz_FileName, S_IWRITE | S_IREAD);
 			if(rename(pfile->psz_FileName, asz_Temp)) Warning("Can't rename file", pfile->psz_FileName);
 			return;
 		}
 
-		GC_UNLINK(pfile->psz_FileName);
+		unlink(pfile->psz_FileName);
 	}
 
 	/* Open file to write */
@@ -229,7 +229,7 @@ void WriteFile(FileDes *pfile)
 	}
 	else
 	{
-		GC_CHMOD(name, GC_S_IWRITE);
+		chmod(name, S_IWRITE);
 	}
 
 	h = fopen(name, "wb");
