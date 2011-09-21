@@ -135,7 +135,7 @@ int Tool_DeleteCommentMarks(token *pcur, char **pp, int markCnt)
  */
 void Tool_UnSplitCmt(token *pcur)
 {
-	/*~~~~~~~~~~~~~*/
+	/*~~~~~~~~~~~~*/
 	char	*p, *p1;
 	char	*gn;
 	char	*memo;
@@ -144,7 +144,7 @@ void Tool_UnSplitCmt(token *pcur)
 	int		typespec;
 	int		column;
 	int		code;
-	/*~~~~~~~~~~~~~*/
+	/*~~~~~~~~~~~~*/
 
 	p = pcur->pc_Value;
 
@@ -152,7 +152,7 @@ void Tool_UnSplitCmt(token *pcur)
 	if(FixedComment(pcur)) return;
 
 	/* Allocate for the new comment */
-	memo = (char *) __malloc__(strlen(p) * 8);
+	memo = (char *) __malloc__(strlen(p) + 4);
 
 	/* Begin mark */
 	gn = memo;
@@ -283,7 +283,96 @@ re:
 		}
 
 		/* Copy one space */
-		if(!code && gn[-1] != ' ') *gn++ = ' ';
+		if(gn[-1] != ' ') *gn++ = ' ';
+	}
+
+End:
+	/* Add an empty space at the end */
+	if(gn[-1] != ' ') *gn++ = ' ';
+
+	/* End mark */
+	*gn++ = '*';
+	*gn++ = '/';
+	*gn++ = 0;
+
+	/* Replace old comment with new one */
+	free(pcur->pc_Value);
+	pcur->pc_Value = memo;
+}
+
+/*
+ =======================================================================================================================
+    This routine deletes leading '*' and keeps eol and could be called instead of Tool_UnSplitCmt.
+ =======================================================================================================================
+ */
+void Tool_UnSplitCmt2(token *pcur)
+{
+	/*~~~~~~~~~~*/
+	char	*p;
+	char	*gn;
+	char	*memo;
+	/*~~~~~~~~~~*/
+
+	p = pcur->pc_Value;
+
+	/* Do not indent a fixed comment */
+	if(FixedComment(pcur)) return;
+
+	/* Allocate for the new comment */
+	memo = (char *) __malloc__(strlen(p) + 4);
+
+	/* Begin mark */
+	gn = memo;
+	*gn++ = '/';
+	*gn++ = '*';
+
+	/* Skip $X marks */
+	CmtMark(&p, &gn);
+
+	/* Delete leading comment marks of length skipping the "/" */
+	Tool_DeleteCommentMarks(pcur, &p, 1);
+
+	*gn++ = ' ';
+	for(;;)
+	{
+		if(*p == '\n')
+		{
+			while(_isspace(*p))
+			{
+				p++;
+			}
+
+			while(*p == '*')
+			{
+				if(p[0] == '*' && p[1] == '/') goto End;
+				p++;
+			}
+		}
+
+		/* Check for "*\n" */
+		if(*p == '\n') continue;
+		if(p[0] == '*' && p[1] == '/') goto End;
+		if(Tool_DeleteCommentMarks(pcur, &p, 3)) break;
+
+		/* Copy to end of line */
+		while(*p)
+		{
+			if(p[0] == '*' && p[1] == '/') goto End;
+
+			if(*p == '\n')
+			{
+				/* eat trailing '*' (i.e. boxed comments) */
+				if(p[-1] == '*') gn--;
+
+				/* store EOL and out of loop */
+				*gn++ = '\n';
+				break;
+			}
+			else
+			{
+				*gn++ = *p++;
+			}
+		}
 	}
 
 End:
@@ -347,6 +436,7 @@ void Tool_SplitCmtFirstLine(token *pcur)
 	gn = memo;
 	*gn++ = '/';
 	*gn++ = '*';
+	if(Config.JavaDoc) *gn++ = '*';
 	if(pcur->doxygen)
 	{
 		for(i = 0; i < pcur->doxygen; i++) *gn++ = p[2 + i];
@@ -356,6 +446,12 @@ void Tool_SplitCmtFirstLine(token *pcur)
 	/* Marked comments */
 	CmtMark(&p, &gn);
 	colbeg = pcur->Col + 5;
+	/* do not include CPP comment into c comment */
+	if(pcur->CppComment && Config.CmtKeepCpp)
+	{
+		gn = memo;
+		goto mark1;
+	}
 	if(!Config.CmtFirstLineBreakFirst) goto mark1;
 	for(;;)
 	{
@@ -417,13 +513,23 @@ mark1:
 	}
 
 End:
-	while(_isspace(gn[-1])) gn--;
+	if(_isspace(gn[-1]))
+	{
+		while(_isspace(*gn)) gn--;
+
+		/* a trailing space must be kept if it is preceded by a '\' */
+		if(*gn == '\\') ++gn;
+	}
 
 	/* End mark */
-	if(Config.CmtFirstLineBreakLast) *gn++ = '\n';
-	*gn++ = ' ';
-	*gn++ = '*';
-	*gn++ = '/';
+	if(!(pcur->CppComment && Config.CmtKeepCpp))
+	{
+		if(Config.CmtFirstLineBreakLast) *gn++ = '\n';
+		*gn++ = ' ';
+		*gn++ = '*';
+		*gn++ = '/';
+	}
+
 	*gn++ = 0;
 
 	/* Replace old comment with new one */
@@ -462,11 +568,18 @@ void Tool_SplitCmtFct(token *pcur, int sep)
 	/* FIXME: Flag to decide if the comment is empty?? */
 	isEmpty = strlen(pcur->pc_Value) < 6;
 
+	/* Turn off cpp comment convertions if we're doing java doc */
+	if(Config.FctJavaDoc) pcur->CppComment = 0;
+
 	lenw = 0;
 	p = pcur->pc_Value;
 	first = 1;
 	lencateg = 0;
 	coldes = Config.TabSize;
+	if(Config.FctJavaDoc)
+		coldes = 1;
+	else
+		coldes = Config.TabSize;
 	pp1 = pp2 = NULL;
 	colc1 = 0;
 	memospace = 0;
@@ -482,6 +595,7 @@ void Tool_SplitCmtFct(token *pcur, int sep)
 
 	*gn++ = '/';
 	*gn++ = '*';
+	if(Config.FctJavaDoc) *gn++ = '*';
 	if(pcur->doxygen)
 	{
 		for(i = 0; i < pcur->doxygen; i++) *gn++ = p[2 + i];
