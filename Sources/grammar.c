@@ -571,7 +571,7 @@ token *Grammar_StmtLevel(FileDes *pfile, token *pcur, int StmtLevel)
 		{
 		case TOKEN_LPAREN:
 			pnext = Tool_ToRelationNext(pcur);
-			if(!pnext) Syntaxe();
+			if(!pnext) Syntaxe(pcur->line, pcur->column);
 			while(pnext && pnext != pcur)
 			{
 				pcur->StmtLevel = StmtLevel;
@@ -689,6 +689,7 @@ token *Grammar_StmtLevel(FileDes *pfile, token *pcur, int StmtLevel)
 			case TOKEN_W_IF:
 				fif = 1;
 
+			case TOKEN_W_CATCH:
 			case TOKEN_W_FOR:
 			case TOKEN_W_WHILE:
 			case TOKEN_W_SWITCH:
@@ -709,9 +710,10 @@ token *Grammar_StmtLevel(FileDes *pfile, token *pcur, int StmtLevel)
 				pcur = pend;
 				pnext = pend;
 
+			case TOKEN_W_TRY:
 			case TOKEN_W_ELSE:
 			case TOKEN_W_DO:
-				/* Recurse call to retreive the statement */
+				/* Recurse call to retrieve the statement */
 				pnext = Tool_NextValid(pcur);
 				pcur = Grammar_StmtLevel(pfile, NextToken(pcur), StmtLevel + 1);
 
@@ -757,6 +759,7 @@ token *Grammar_StmtLevel(FileDes *pfile, token *pcur, int StmtLevel)
 
 				continue;
 			}
+
 			break;
 		}
 
@@ -1102,12 +1105,12 @@ void DeclIncludes(FileDes *pfile)
 					gast_Includes[i].i_NumInc++;
 					for(j = 0; j < gast_Includes[i].i_NumIncludeBy; j++)
 					{
-						if(gast_Includes[i].ai_IncludeBy[j] == pfile) break;
+						if(gast_Includes[i].ai_IncludeBy[j] == (int) pfile) break;
 					}
 
 					if(j == gast_Includes[i].i_NumIncludeBy)
 					{
-						gast_Includes[i].ai_IncludeBy[j] =  pfile;
+						gast_Includes[i].ai_IncludeBy[j] = (int) pfile;
 						gast_Includes[i].i_NumIncludeBy++;
 					}
 
@@ -1116,7 +1119,7 @@ void DeclIncludes(FileDes *pfile)
 			}
 
 			gast_Includes[gi_NumIncludes].i_NumInc = 1;
-			gast_Includes[gi_NumIncludes].ai_IncludeBy[0] = pfile;
+			gast_Includes[gi_NumIncludes].ai_IncludeBy[0] = (int) pfile;
 			gast_Includes[gi_NumIncludes].i_NumIncludeBy = 1;
 			gi_NumIncludes++;
 recom: ;
@@ -1376,7 +1379,7 @@ void Grammar(FileDes *pfile)
 	Grammar_LabelDecl(pfile);
 	Grammar_Class(pfile);
 	Grammar_IsType(pfile);
-	Grammar_IsTypeCorrect(pfile);
+//	Grammar_IsTypeCorrect(pfile);  ?? Needed ??
 	Grammar_InTemplate(pfile);
 	Grammar_InsideParen(pfile);
 	Grammar_IsType(pfile);

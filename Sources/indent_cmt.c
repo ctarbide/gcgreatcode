@@ -750,7 +750,7 @@ void Indent_CmtCommentFirstLine(FileDes *pfile)
 		}
 
 		/* Struct */
-		pnext = pcur->pst_Next;
+		pnext = Tool_NextValid(pcur);
 		pnext1 = Tool_NextValid(pnext);
 		if(Config.AutoSepStruct)
 		{
@@ -1284,7 +1284,9 @@ void Indent_EmptyLinesSep(FileDes *pfile)
 				}
 				else
 				{
-					Tool_ForceEOLBefore(pcur, Config.EolBeforeFctCmt + 1);
+					/* do not split trailing comment on pre-processor line */
+					for(pprev = pcur; pprev->pst_Prev && pprev->i_ID == TOKEN_CCMT; pprev = pprev->pst_Prev);
+					if(pprev->i_ID != TOKEN_PP) Tool_ForceEOLBefore(pcur, Config.EolBeforeFctCmt + 1);
 				}
 			}
 		}

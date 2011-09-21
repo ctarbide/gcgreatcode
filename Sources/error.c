@@ -45,8 +45,8 @@ void Warning(char *_psz_Text, char *_psz_Param)
  =======================================================================================================================
  =======================================================================================================================
  */
-void Syntaxe(void)
+void Syntaxe(int line, int col)
 {
-	printf("** Syntaxe error detected or file too strange... Exit.\n");
+	printf("** Syntax error detected or file too strange... \n Trying to match Line %d col %d \n Exit.\n", line, col);
 	exit(-1);
 }

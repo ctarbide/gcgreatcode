@@ -57,6 +57,7 @@ extern token	*Tool_ToEndLine(token *);
 extern token	*Tool_PrevValid(token *);
 extern token	*Tool_NextValid(token *);
 extern token	*Tool_SearchToken(token *, int);
+extern int		Tool_SearchFirst(token *, int, int);
 extern token	*Tool_ToRelationNext(token *);
 extern token	*Tool_ToRelationPrev(token *);
 extern void		Tool_ForceEOLAfterComments(token *, int);
@@ -71,7 +72,7 @@ extern void		Tool_ForceEmptyLineBefore(token *);
 extern void		Tool_SetFlag(token *, token *, char *, char);
 extern void		Tool_IncIndentLevel(token *, token *, int);
 extern int		Tool_ToTab(int);
-extern char		Tool_IsSpecialWord(char *, int *, int *);
+extern char		Tool_IsSpecialWord(char *, int *type, int *column);
 
 /*$2
  -----------------------------------------------------------------------------------------------------------------------
@@ -81,17 +82,10 @@ extern char		Tool_IsSpecialWord(char *, int *, int *);
 #define CMTMARK '$'
 #define EmptyComment(p) \
 		((p->pc_Value[0] == '/') && (p->pc_Value[1] == '*') && (p->pc_Value[2] == '*') && (p->pc_Value[3] == '/'))
-#define FixedCommentEx(pcur, offset) \
-		( \
-			((pcur->pc_Value[offset + 2] == CMTMARK) && (pcur->pc_Value[offset + 3] == 'F')) \
-		||	(Config.NoCmtIndent) \
-		||	pcur->WizardCmt \
-		)
 #define LevelCommentEx(pcur, offset)	((pcur->pc_Value[offset + 2] == CMTMARK) && (isdigit(pcur->pc_Value[offset + 3])))
 #define ForceSplitCommentEx(pcur, offset) \
 		((pcur->pc_Value[offset + 2] == CMTMARK) && (pcur->pc_Value[offset + 3] == 'S'))
 #define DeleteCommentEx(pcur, offset)	((pcur->pc_Value[offset + 2] == CMTMARK) && (pcur->pc_Value[offset + 3] == 'D'))
-#define FixedComment(pcur)				(FixedCommentEx(pcur, 0) || FixedCommentEx(pcur, 1))
 #define ForceSplitComment(pcur)			(ForceSplitCommentEx(pcur, 0) || ForceSplitCommentEx(pcur, 1))
 #define DeleteComment(pcur)				(DeleteCommentEx(pcur, 0) || DeleteCommentEx(pcur, 1))
 #define _isspace(a)						(a == ' ' || a == '\n' || a == '\t')
@@ -112,6 +106,7 @@ extern void		Tool_AddTag(FileDes *, token *);
 extern token	*Tool_AddEmpty(FileDes *, token *, char *, int, int);
 extern token	*Tool_AddEmptyCmtAfterIfMissing(FileDes *pfile, token *pcur);
 extern char		*Tool_pLevelComment(token *pcur);
+extern int		FixedComment(token *pcur);
 
 /*$2
  -----------------------------------------------------------------------------------------------------------------------

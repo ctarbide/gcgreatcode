@@ -57,8 +57,8 @@ char		*gargv[MAX_DEF_PARAMS];
 tdst_Config Config;
 tdst_Config Config1;
 
-char		gz_LstFileName[1024] = "GC.lst";
-char		gz_CfgFileName[1024] = "GC.cfg";
+char		*gz_LstFileName = "gc.lst";
+char		*gz_CfgFileName = "gc.cfg";
 char		*gz_FixmeComment = "/* */";
 
 /*
@@ -79,7 +79,7 @@ struct
 gast_Options[] =
 {
 	{ "in_cfg-",							TYPE_OPT_CFGFILE,	NULL, 0, 0, "Read file.cfg to get options"},
-	{ "dir-",								TYPE_OPT_DIR,		NULL, 0, 0, "Process all files of that directory (recursivly)"},
+	{ "dir-",								TYPE_OPT_DIR,		NULL, 0, 0, "Process all files of that directory (recursively)"},
 	{ "direx-",								TYPE_OPT_DIREX,		NULL, 0, 0, "Exclude directory of process"},
 	{ "file-",								TYPE_OPT_FILE,		NULL, 0, 0, "Process file"},
 	{ "fileex-",							TYPE_OPT_FILEEX,	NULL, 0, 0, "Exclude file of process"},
@@ -92,7 +92,11 @@ gast_Options[] =
 	{ "bak-",								TYPE_OPT_BOOL,		&Config.CanBak, 0, 0, "Generate a backup file (inputfile.bak)"},
 	{ "tab_size-",							TYPE_OPT_INT,		&Config.TabSize, 4, 0, "Number of blanks in an indentation level"},
 	{ "tab_out-",							TYPE_OPT_BOOL,		&Config.OutTab, 1, 0, "Generate tabulations in input file instead of blanks"},
+#ifdef _WIN32
 	{ "eol_unix-",							TYPE_OPT_BOOL,		&Config.UnixEOL, 0, 0, "Generate unix style EOL"},
+#else
+	{ "eol_unix-",							TYPE_OPT_BOOL,		&Config.UnixEOL, 1, 0, "Generate unix style EOL"},
+#endif
 	{ "space_if-",							TYPE_OPT_BOOL,		&Config.SpaceIf, 0, 0, "Add a blank after if, while, for, do"},
 	{ "space_return-",						TYPE_OPT_BOOL,		&Config.SpaceReturn, 0, 0, "Add a blank after return"},
 	{ "space_fctcall-",						TYPE_OPT_BOOL,		&Config.SpaceFctCall, 0, 0, "Add a blank after a function call"},
@@ -133,10 +137,11 @@ gast_Options[] =
 	{ "code_wizard_indent-",				TYPE_OPT_BOOL,		&Config.WizardIndent, 1, 0, "Indent code between devstudio appwizard special comments"},
 	{ "code_force_return_paren-",			TYPE_OPT_BOOL,		&Config.ReturnAddParen, 0, 0, "Force enclose parenthesis in a return expression"},
 	{ "code_remove_return_paren-",			TYPE_OPT_BOOL,		&Config.ReturnDelParen, 0, 0, "Remove all parentheses around a return parameter"},
-	{ "code_align_max_blanks-",				TYPE_OPT_INT,		&Config.MaxAlignSpaces, 1000, 1, "The max number of blanks to add for a declaration alignement"},
+	{ "code_align_max_blanks-",				TYPE_OPT_INT,		&Config.MaxAlignSpaces, 1000, 1, "The max number of blanks to add for a declaration alignment"},
 	{ "code_def_fct_break_return_type-",	TYPE_OPT_BOOL,		&Config.BreakFctType, 0, 0, "Force a line break after the return type in a function definition"},
 	{ "code_concat_strings-",				TYPE_OPT_BOOL,		&Config.ConcatStrings, 1, 0, "Concat adjacent string constants"},
 	{ "code_empty_fct_blanks-",				TYPE_OPT_INT,		&Config.EmptyFctBlanks, 1, 0, "Number of blank lines in empty functions"},
+	{ "catch_eol_before-",					TYPE_OPT_INT,		&Config.CatchBlanksBefore, 1, 0, "Number of eol before catch"},
 	{ "code_class_access_eol_before-",		TYPE_OPT_INT,		&Config.AccessBlanksBefore, 1, 0, "Number of eol before class access"},
 	{ "code_class_access_eol_after-",		TYPE_OPT_INT,		&Config.AccessBlanks, 1, 0, "Number of eol after class access"},
 	{ "code_labels_eol_after-",				TYPE_OPT_INT,		&Config.LabelBlanks, 1, 0, "Number of eol after labels"},
@@ -159,32 +164,44 @@ gast_Options[] =
 	{ "stmt_brace_style-",					TYPE_OPT_INT,		&Config.BraceStyle, 0, 0, "Change indentation style of braces for all other statements (if, while...)"},
 	{ "stmt_switch_style-",					TYPE_OPT_INT,		&Config.SwitchStyle, 0, 0, "Change indentation style of switch"},
 	{ "stmt_switch_eol-",					TYPE_OPT_INT,		&Config.SwitchEol, 0, 0, "Change style of lines between cases"},
-	{ "stmt_class_indent-",					TYPE_OPT_INT,		&Config.IndentClass, 0, 0, "Number of additionnal indentation levels in a class declaration"},
+	{ "stmt_class_indent-",					TYPE_OPT_INT,		&Config.IndentClass, 0, 0, "Number of additional indentation levels in a class declaration"},
 	{ "stmt_namespace_indent-",				TYPE_OPT_BOOL,		&Config.IndentNamespace, 0, 0, "Indent one level a namespace statement"},
 	{ "stmt_extern_c_indent-",				TYPE_OPT_BOOL,		&Config.IndentExternC, 0, 0, "Indent one level an extern c statement"},
-	{ "stmt_static_init_style-",			TYPE_OPT_INT,		&Config.StaticInit, 0, 0, "Style of static initialisations"},
+	{ "stmt_static_init_style-",			TYPE_OPT_INT,		&Config.StaticInit, 0, 0, "Style of static initializations"},
 	{ "stmt_static_init_len-",				TYPE_OPT_INT,		&Config.LineLenSplitInit, 80, 0, "Max length of line when concat static init"},
 	{ "pp_align_to_code-",					TYPE_OPT_BOOL,		&Config.PPToCode, 0, 0, "Align or not PP directive to the code just below"},
 	{ "pp_style-",							TYPE_OPT_INT,		&Config.PPStyle, 0, 0, "Set indentation style of PP directives"},
 	{ "pp_include_unix-",					TYPE_OPT_BOOL,		&Config.IncludeLin, 1, 0, "Change backslash to slash in include directives"},
-	{ "pp_align_breakline-",				TYPE_OPT_BOOL,		&Config.AlignBL, 0, 0, "Align break lines in multilines macros"},
+	{ "pp_align_breakline-",				TYPE_OPT_BOOL,		&Config.AlignBL, 0, 0, "Align break lines in multi lines macros"},
 	{ "cmt_fixme-",							TYPE_OPT_FIXME_CMT, NULL, 0, 0, "Specify the string for FIXME comment the default is \"/* FIXME: Comment */\""},
 	{ "cmt_align_max_blanks-",				TYPE_OPT_INT,		&Config.MaxAlignCmt, 20, 1, "The max number of blanks to add for last line comments"},
 	{ "cmt_dont_modify-",					TYPE_OPT_BOOL,		&Config.NoCmtIndent, 0, 0, "Never touched comments (like $F directive but for all comments)"},
+	{ "cmt_keep-char_1-",					TYPE_OPT_CHAR,		&Config.CmtKeepChar1, 0, 0, "Never touched comments like /**<char>"},
+	{ "cmt_keep-char_2-",					TYPE_OPT_CHAR,		&Config.CmtKeepChar2, 0, 0, "Never touched comments like /**<char>"},
+	{ "cmt_keep-char_3-",					TYPE_OPT_CHAR,		&Config.CmtKeepChar3, 0, 0, "Never touched comments like /**<char>"},
+	{ "cmt_keep-char_4-",					TYPE_OPT_CHAR,		&Config.CmtKeepChar4, 0, 0, "Never touched comments like /**<char>"},
+	{ "cmt_keep-char_cpp_1-",				TYPE_OPT_CHAR,		&Config.CmtKeepCharCpp1, 0, 0, "Never touched comments like /**<char>"},
+	{ "cmt_keep-char_cpp_2-",				TYPE_OPT_CHAR,		&Config.CmtKeepCharCpp2, 0, 0, "Never touched comments like /**<char>"},
+	{ "cmt_keep-char_cpp_3-",				TYPE_OPT_CHAR,		&Config.CmtKeepCharCpp3, 0, 0, "Never touched comments like /**<char>"},
+	{ "cmt_keep-char_cpp_4-",				TYPE_OPT_CHAR,		&Config.CmtKeepCharCpp4, 0, 0, "Never touched comments like /**<char>"},
 	{ "cmt_add_gc_tag-",					TYPE_OPT_BOOL,		&Config.TagFile, 1, 0, "Add a /*$T */ mark at the beginning of file (if not already present)"},
 	{ "cmt_add_file-",						TYPE_OPT_BOOL,		&Config.FileCmt, 1, 0, "Add a special comment at the beginning of file (if not already present)"},
 	{ "cmt_add_file_style-",				TYPE_OPT_INT,		&Config.FileCmtStyle, 0, 0, "Special comment style at the beginning of file"},
 	{ "cmt_add_fct_def-",					TYPE_OPT_BOOL,		&Config.AddCmtFct, 1, 0, "Add an empty comment before function definition (if not already present)"},
 	{ "cmt_add_fct_def_class-",				TYPE_OPT_BOOL,		&Config.AddCmtFctClass, 1, 0, "Add an empty comment before inline function in class (if not already present)"},
 	{ "cmt_trailing_style-",				TYPE_OPT_INT,		&Config.TrailingCmtStyle, 0, 0, "Trailing comment style"},
+	{ "cmt_split_before_@_in_fct_cmts-",	TYPE_OPT_BOOL,		&Config.SplitBeforeAtInFctCmts, 0, 0, "Split comments before '@'"},
 	{ "cmt_add_class_access-",				TYPE_OPT_BOOL,		&Config.AddCmtClassAccess, 1, 0, "Add an empty comment before class access (if not already present)"},
 	{ "cmt_first_space_cpp-",				TYPE_OPT_BOOL,		&Config.SpaceCmtCpp, 1, 0, "Force a space after the opening comment delimiter '//'"},
 	{ "cmt_keep_cpp-",						TYPE_OPT_BOOL,		&Config.CmtKeepCpp, 0, 0, "Keep C++ comments in code"},
-	{ "cmt_force_fct_def_decl_split-",		TYPE_OPT_BOOL,		&Config.ForceFctDefDeclSplit, 0, 0, "Force function defintions and declartions to split"},
+	{ "cmt_force_fct_def_decl_split-",		TYPE_OPT_BOOL,		&Config.ForceFctDefDeclSplit, 0, 0, "Force function definitions and declarations to split"},
+	{ "cmt_java_doc-",						TYPE_OPT_BOOL,		&Config.JavaDoc, 0, 0, "Enable the java doc type comments"},
+	{ "cmt_fct_java_doc-",					TYPE_OPT_BOOL,		&Config.FctJavaDoc, 0, 0, "Enable the java doc type comments for functions"},
 	{ "cmt_c2cpp-",							TYPE_OPT_BOOL,		&Config.CToCpp, 0, 0, "Convert all C comments to the C++ form"},
-	{ "cmt_cpp2c_keep_eol-",				TYPE_OPT_BOOL,		&Config.CppToCKeepEOL, 1, 0, "When converting C++ comments to C, replace EOL with GC breakline character)"},
+	{ "cmt_cpp2c_keep_eol-",				TYPE_OPT_BOOL,		&Config.CppToCKeepEOL, 1, 0, "When converting C++ comments to C, replace EOL with GC break line character)"},
 	{ "cmt_fct_categ-",						TYPE_OPT_CTGFXCMT,	NULL, 0, 0, "Add a special keyword for function declaration comments"},
 	{ "cmt_fct_categ_in-",					TYPE_OPT_CTGFXCMT1, NULL, 0, 0, "Add a special keyword for parameters description in a function declaration comment"},
+	{ "cmt_fct_categ_style-",				TYPE_OPT_INT,		&Config.CmtCategCtyle, 0, 0, "Style for special words in comments"},
 	{ "cmt_decl-",							TYPE_OPT_BOOL,		&Config.CmtDeclStmt, 1, 0, "Add separators in local variable declaration (before and/or after)"},
 	{ "cmt_decl_max_level-",				TYPE_OPT_INT,		&Config.CmtDeclMaxLevel, 100, 0, "-cmt_decl- option is valid for declaration in a statement level < that value"},
 	{ "cmt_decl_before-",					TYPE_OPT_BOOL,		&Config.CmtSepDeclBefore, 1, 0, "Add a separator before local declarations"},
@@ -237,10 +254,14 @@ gast_Options[] =
 	{ "dependencies_dir-",					TYPE_OPT_DEPEND,	NULL, 0, 0, "Add an include path for the processing of dependencies"},
 	{ "dependencies_dir_rec-",				TYPE_OPT_BOOL,		&Config.DepRec, 0, 0, "Include path are recurs scan for the processing of dependencies"},
 };
+
+#define GAST_ENTRIES (sizeof(gast_Options) / sizeof(gast_Options[0]))
+
 /*$on*/
 
 /*
  =======================================================================================================================
+ Usage: Print the Usage message
  =======================================================================================================================
  */
 void Usage(void)
@@ -261,7 +282,7 @@ void Usage(void)
 	printf("Enclose the parameter with \"\" in case of blanks\n");
 	printf("Example : GC -no-bak- -tab_size-8 -file-filename.c\n");
 	printf("-------------------------------------------------------\n\n");
-	for(i = 0; i < sizeof(gast_Options) / sizeof(gast_Options[0]); i++)
+	for(i = 0; i < GAST_ENTRIES; i++)
 	{
 		if(gast_Options[i].type == TYPE_OPT_BOOL)
 			sprintf(asz, "[-no]-%s", gast_Options[i].name);
@@ -337,7 +358,7 @@ void Usage(void)
 	printf("Configuration files (optional)\n");
 	printf("-------------------------------\n\n");
 	printf("GC.lst					You can specify a list of files to indent (one per line)\n");
-	printf("                        Use -file-???? option syntaxe for each file\n");
+	printf("                        Use -file-???? option syntax for each file\n");
 	printf("GC.cfg			        You can specify a list of options (one per line)\n");
 
 	printf("\n");
@@ -368,13 +389,16 @@ void Usage(void)
  =======================================================================================================================
  =======================================================================================================================
  */
+/* Not used ? 
 void ForceOption(char *opt)
 {
 	Options(1, &opt);
 }
+*/
 
 /*
  =======================================================================================================================
+ Default : set values to their defaults
  =======================================================================================================================
  */
 void Default(void)
@@ -383,9 +407,9 @@ void Default(void)
 	int i;
 	/*~~*/
 
-	for(i = 0; i < sizeof(gast_Options) / sizeof(gast_Options[0]); i++)
+	for(i = 0; i < GAST_ENTRIES; i++)
 	{
-		if(gast_Options[i].add)
+		if(gast_Options[i].add != NULL)
 		{
 			*(gast_Options[i].add) = gast_Options[i].valdefault;
 		}
@@ -398,6 +422,7 @@ void Default(void)
 
 /*
  =======================================================================================================================
+ CheckConfig : check that configured options are allowed, force some configuration is certain flags given.
  =======================================================================================================================
  */
 void CheckConfig(void)
@@ -416,6 +441,17 @@ void CheckConfig(void)
 
 	if(Config.CToCpp) Config.CmtKeepCpp = 1;
 
+	if(Config.FctJavaDoc)
+	{
+		Config.CmtSeparatorStar = 1;
+	}
+
+	if(Config.JavaDoc)
+	{
+		Config.CmtSeparatorStar = 1;
+		Config.FctJavaDoc = 1;
+	}
+
 	if(Config.TrailingCmtStyle)
 	{
 		Config.ForceFctDefDeclSplit = 1;
@@ -427,6 +463,34 @@ void CheckConfig(void)
 
 /*
  =======================================================================================================================
+ ConvertFile : Set options from the content of the given file
+ =======================================================================================================================
+ */
+int ConvertFile(char *name)
+{
+	/*~~~~~~~~~~~~~~~*/
+	FILE	*h;
+	int		num;
+	int		result = 0;
+	/*~~~~~~~~~~~~~~~*/
+
+	h = fopen(name, "rb");
+	if(h)
+	{
+		ConvertFileToArgv(h, &num);
+		Options(num, gargv);
+		while(num) free(gargv[--num]);
+		fclose(h);
+		printf("Using configuration in file: %s\n", name);
+		result = 1;
+	}
+
+	return result;
+}
+
+/*
+ =======================================================================================================================
+ ConvertFileToArgv : build an argument list from the content of the given file
  =======================================================================================================================
  */
 void ConvertFileToArgv(FILE *h, int *argc)
@@ -500,6 +564,7 @@ void ConvertFileToArgv(FILE *h, int *argc)
 			gargv[*argc] = strdup(pmem);
 			ptmp++;
 		}
+		printf("arg[%d] = %s\n", *argc, gargv[*argc]);
 		(*argc)++;
 	}
 
@@ -508,6 +573,7 @@ void ConvertFileToArgv(FILE *h, int *argc)
 
 /*
  =======================================================================================================================
+ Options : set configuration from the given option array 
  =======================================================================================================================
  */
 void Options(int argc, char *argv[])
@@ -534,7 +600,7 @@ void Options(int argc, char *argv[])
 			res = 0;
 		}
 
-		for(j = 0; j < sizeof(gast_Options) / sizeof(gast_Options[0]); j++)
+		for(j = 0; j < GAST_ENTRIES; j++)
 		{
 			if((strstr(ptest, gast_Options[j].name)) && (ptest[strlen(gast_Options[j].name) - 1] == '-'))
 			{
@@ -548,7 +614,7 @@ void Options(int argc, char *argv[])
 					if(gi_NumFileInsert == MAX_DEF_FILEINSERT) Fatal("Too many file insertion", NULL);
 					ptest += strlen(gast_Options[j].name);
 					gapsz_FileInsert[gi_NumFileInsert++] = strdup(ptest);
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
@@ -565,20 +631,20 @@ void Options(int argc, char *argv[])
 					p = gast_ExtList[gi_NumExtTokens++].as;
 					while(*p && !isspace(*p)) p++;
 					*p = 0;
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
 				case TYPE_OPT_CHAR:
 					ptest += strlen(gast_Options[j].name);
 					*(gast_Options[j].add) = *ptest;
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
 				case TYPE_OPT_BOOL:
 					*(gast_Options[j].add) = res;
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
@@ -588,7 +654,7 @@ void Options(int argc, char *argv[])
 					if(!*ptest) Fatal("Bad option", argv[i]);
 					*(gast_Options[j].add) = atol(ptest);
 					if(*(gast_Options[j].add) < gast_Options[j].valmin) Fatal("Parameter is incorrect", argv[i]);
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
@@ -596,7 +662,7 @@ void Options(int argc, char *argv[])
 					if(gi_NumScanFiles == MAX_DEF_FILESDIRS) Fatal("Too many directories", NULL);
 					ptest += strlen(gast_Options[j].name);
 					gpsz_RecurseDirs[gi_NumRecurseDirs++] = strdup(ptest);
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
@@ -604,14 +670,14 @@ void Options(int argc, char *argv[])
 					if(gi_NumExcludeFiles == MAX_DEF_FILESDIRS) Fatal("Too many exclude directories", NULL);
 					ptest += strlen(gast_Options[j].name);
 					gpsz_ExcludeDirs[gi_NumExcludeDirs++] = strdup(ptest);
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
 				case TYPE_OPT_DEPEND:
 					ptest += strlen(gast_Options[j].name);
 					gpsz_IncludeDirs[gi_NumIncludesDirs++] = strdup(ptest);
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
@@ -619,17 +685,17 @@ void Options(int argc, char *argv[])
 					if(gi_NumScanFiles == MAX_DEF_FILESDIRS) Fatal("Too many files", NULL);
 					ptest += strlen(gast_Options[j].name);
 					gpsz_ScanFiles[gi_NumScanFiles++] = strdup(ptest);
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
 				case TYPE_OPT_CFGFILE:
 					ptest += strlen(gast_Options[j].name);
 					strcpy(gz_CfgFileName, ptest);
-					if((!strchr(gz_CfgFileName, '/')) && !(strchr(gz_CfgFileName, '\\')))
+					if(strchr(gz_CfgFileName, DIR_SEPARATOR) == NULL)
 					{
 						strcpy(asz_Path, asz_Temp);
-						strcat(asz_Path, "/");
+						strcat(asz_Path, "/");				/* really should be "DIR_SEPARATOR" .. but */
 						strcat(asz_Path, gz_CfgFileName);
 					}
 					else
@@ -638,7 +704,14 @@ void Options(int argc, char *argv[])
 					}
 
 					h = fopen(asz_Path, "rb");
-					if(!h) h = fopen(gz_CfgFileName, "rb");
+					if(!h)
+					{
+						h = fopen(gz_CfgFileName, "rb");
+						if(h) printf("Using configuration in file: %s\n", gz_CfgFileName);
+					}
+					else
+						printf("Using configuration in file: %s\n", gz_CfgFileName);
+
 					if(h)
 					{
 						ConvertFileToArgv(h, &num);
@@ -648,7 +721,7 @@ void Options(int argc, char *argv[])
 					}
 					else
 						Warning("Can't find cfg file", asz_Path);
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
@@ -656,7 +729,7 @@ void Options(int argc, char *argv[])
 					if(gi_NumExcludeFiles == MAX_DEF_FILESDIRS) Fatal("Too many exclude files", NULL);
 					ptest += strlen(gast_Options[j].name);
 					gpsz_ExcludeFiles[gi_NumExcludeFiles++] = strdup(ptest);
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
@@ -665,7 +738,7 @@ void Options(int argc, char *argv[])
 					ptest += strlen(gast_Options[j].name);
 					gast_CmtCateg[gi_NumCmtCateg].mpsz_Name = strdup(ptest);
 					gast_CmtCateg[gi_NumCmtCateg++].mi_Type = 1;
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
@@ -674,7 +747,7 @@ void Options(int argc, char *argv[])
 					ptest += strlen(gast_Options[j].name);
 					gast_CmtCateg[gi_NumCmtCateg].mpsz_Name = strdup(ptest);
 					gast_CmtCateg[gi_NumCmtCateg++].mi_Type = 2;
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
@@ -689,20 +762,20 @@ void Options(int argc, char *argv[])
 					*p = 0;
 					p++;
 					gast_Replace[gi_NumReplace++].mpsz_Name2 = strdup(p);
-					goto l_ok;
+					break;
 
 				/*$2--------------------------------------------------------------------------------------------------*/
 
 				case TYPE_OPT_FIXME_CMT:
 					ptest += strlen(gast_Options[j].name);
 					gz_FixmeComment = strdup(ptest);
-					goto l_ok;
+					break;
 				}
 			}
 		}
+		if(i == GAST_ENTRIES)
+			Fatal("Unknown option", ptest);
 
-		Fatal("Unknown option", ptest);
-l_ok:
 		ptest = argv[i];
 	}
 }

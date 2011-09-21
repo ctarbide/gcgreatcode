@@ -234,7 +234,7 @@ recom:
 					pnext = Tool_NextValid(pnext);
 				}
 
-				if(pnext->i_ID == TOKEN_SEMICOL)
+				if (Tool_SearchFirst(pnext, TOKEN_SEMICOL, TOKEN_LBRACE) == TOKEN_SEMICOL)
 				{
 					pprev = Tool_PrevValid(pcur1);
 					while(pprev && pprev->InPP) pprev = Tool_PrevValid(pprev);
@@ -268,6 +268,7 @@ recom:
 			switch(pcur->i_SubID)
 			{
 			case TOKEN_W_IF:
+			case TOKEN_W_CATCH:
 			case TOKEN_W_WHILE:
 			case TOKEN_W_FOR:
 			case TOKEN_W_SWITCH:
@@ -465,7 +466,18 @@ void Indent_SplitTooLong(FileDes *pfile)
 		/* Don't treat some tokens. */
 		switch(pcur->i_ID)
 		{
-		case TOKEN_CCMT:	pcur = NextToken(pcur); continue;
+		case TOKEN_CPPCMT:
+			if (pcur->pst_Prev != 0)
+			{
+				if (pcur->pst_Prev->i_ID != TOKEN_CPPCMT && pcur->pst_Prev->i_ID != TOKEN_CCMT) break;
+
+				/* place CPP comment on separate lines */
+				pcur->ForceEOLAfter = pcur->pst_Prev->ForceEOLAfter = 1;
+			}
+
+		case TOKEN_CCMT:
+			pcur = NextToken(pcur);
+			continue;
 		}
 
 		if(pcur->pst_Prev && pcur->pst_Prev->ForceEOLAfter)
@@ -1431,9 +1443,12 @@ void Indent_RemoveEOL(FileDes *pfile)
 			if(LastOnLine(pcur))
 			{
 				pnext = Tool_NextValid(pcur);
+
 				if(!LastOnLine(pnext))
 				{
 					pend = Tool_ToRelationNext(pnext);
+					if(!pend) Syntaxe(pnext->line, pnext->column);
+
 					while((pnext != pend) && (pnext->i_ID != TOKEN_EOL)) pnext = NextToken(pnext);
 					if(pnext->i_ID == TOKEN_RPAREN && LastOnLine(pnext)) pcur->ForceEOLAfter = 0;
 				}
@@ -1810,6 +1825,11 @@ void BraceStyle(FileDes *pfile, token *pcur, token *pend, int style)
 		pcur->ForceEOLAfter = 0;
 		pcur->ForceSpaceAfter = (char) (Config.TabSize - 1);
 		return;
+	}
+
+	if (style == 5  && pcur->StmtLevel)
+	{
+		pend->AddSpaceBefore = pcur->AddSpaceBefore = (Config.TabSize + 1)/2;
 	}
 }
 
@@ -2305,7 +2325,7 @@ void Indent_SplitDecl(FileDes *pfile)
 	/*~~~~~~~~~~~~~~~~~~~~~*/
 	token	*pfirst;
 	token	*pcur;
-	token	*pnext, *pnext1;
+	token	*pnext;
 	token	*pprev;
 	token	*ptype1, *ptype2;
 	token	*ppnext, *ppprev;
@@ -2340,12 +2360,10 @@ void Indent_SplitDecl(FileDes *pfile)
 				pnext = pcur;
 				while(pnext->i_ID != TOKEN_COMMA && pnext->i_ID != TOKEN_SEMICOL)
 				{
-					pnext1 = NULL;
-					if(pnext->i_ID == TOKEN_LPAREN) pnext1 = Tool_ToRelationNext(pnext);
-					else if(pnext->i_ID == TOKEN_LARRAY) pnext1 = Tool_ToRelationNext(pnext);
-					else if(pnext->i_ID == TOKEN_LESS) pnext1 = Tool_ToRelationNext(pnext);
-					else if(pnext->i_ID == TOKEN_LBRACE) pnext1 = Tool_ToRelationNext(pnext);
-					if(pnext1) pnext = pnext1;
+					if(pnext->i_ID == TOKEN_LPAREN) pnext = Tool_ToRelationNext(pnext);
+					if(pnext->i_ID == TOKEN_LARRAY) pnext = Tool_ToRelationNext(pnext);
+					if(pnext->i_ID == TOKEN_LESS) pnext = Tool_ToRelationNext(pnext);
+					if(pnext->i_ID == TOKEN_LBRACE) pnext = Tool_ToRelationNext(pnext);
 					pnext = NextToken(pnext);
 				}
 
@@ -2443,20 +2461,14 @@ void Indent_Constructor(FileDes *pfile)
 					{
 						pnext->ForceSpaceAfter = 0;
 						pend1 = Tool_ToRelationNext(pnext);
-						if(pend1)
+						while(pnext != pend1)
 						{
-							while(pnext != pend1)
-							{
-								pnext->ForceEOLAfter = 0;
-								pnext = NextToken(pnext);
-							}
-
-							if(pnext->pst_Prev->i_ID == TOKEN_GREAT)
-								pnext->pst_Prev->ForceSpaceAfter = 1;
-							else
-								pnext->pst_Prev->ForceSpaceAfter = 0;
+							pnext->ForceEOLAfter = 0;
 							pnext = NextToken(pnext);
 						}
+
+						pnext->pst_Prev->ForceSpaceAfter = 0;
+						pnext = NextToken(pnext);
 					}
 
 					if(pnext->i_ID == TOKEN_LPAREN)

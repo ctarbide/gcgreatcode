@@ -36,8 +36,10 @@
 void Tool_MoveTokenBefore(FileDes *pfile, token *_pst_ToMove, token *pref)
 {
 	/* Unlink */
-	if(_pst_ToMove->pst_Prev) _pst_ToMove->pst_Prev->pst_Next = _pst_ToMove->pst_Next;
-	if(_pst_ToMove->pst_Next) _pst_ToMove->pst_Next->pst_Prev = _pst_ToMove->pst_Prev;
+	if(_pst_ToMove->pst_Prev)
+		_pst_ToMove->pst_Prev->pst_Next = _pst_ToMove->pst_Next;
+	if(_pst_ToMove->pst_Next)
+		_pst_ToMove->pst_Next->pst_Prev = _pst_ToMove->pst_Prev;
 
 	/* Link */
 	_pst_ToMove->pst_Next = pref;
@@ -107,18 +109,29 @@ token *Tool_UnlinkToken(FileDes *pfile, token *pcur)
  =======================================================================================================================
  */
 void TokenString(token *pcur)
-{
-	switch(pcur->i_ID)
 	{
-	case TOKEN_BREAKLINE:	pcur->pc_Value = strdup("\\"); break;
-	case TOKEN_LBRACE:		pcur->pc_Value = strdup("{"); break;
-	case TOKEN_RBRACE:		pcur->pc_Value = strdup("}"); break;
-	case TOKEN_LPAREN:		pcur->pc_Value = strdup("("); break;
-	case TOKEN_RPAREN:		pcur->pc_Value = strdup(")"); break;
-	}
+	switch(pcur->i_ID)
+		{
+		case TOKEN_BREAKLINE:
+			pcur->pc_Value = strdup("\\");
+			break;
+		case TOKEN_LBRACE:
+			pcur->pc_Value = strdup("{");
+			break;
+		case TOKEN_RBRACE:
+			pcur->pc_Value = strdup("}");
+			break;
+		case TOKEN_LPAREN:	
+			pcur->pc_Value = strdup("("); 
+			break;
+		case TOKEN_RPAREN:	
+			pcur->pc_Value = strdup(")");
+			break;
+		}
 
-	if(pcur->ForceEOLAfter) pcur->ForceEOLAfter = 1;
-}
+	if(pcur->ForceEOLAfter)
+		pcur->ForceEOLAfter = 1;
+	}
 
 /*
  =======================================================================================================================
@@ -317,63 +330,118 @@ token *Tool_SearchToken(token *pcur, int id)
  =======================================================================================================================
  =======================================================================================================================
  */
-token *Tool_ToRelationNext(token *pcur)
+int Tool_SearchFirst(token *pcur, int id1, int id2)
 {
-	/*~~~~~~~*/
-	int count;
-	int c1, c2;
-	/*~~~~~~~*/
-
-	count = 1;
-	c1 = c2 = pcur->i_ID;
-	if(c1 == TOKEN_LPAREN)
-		c2 = TOKEN_RPAREN;
-	else if(c1 == TOKEN_LBRACE)
-		c2 = TOKEN_RBRACE;
-	else if(c1 == TOKEN_LESS)
-		c2 = TOKEN_GREAT;
-	else if(c1 == TOKEN_LARRAY)
-		c2 = TOKEN_RARRAY;
-	pcur = NextToken(pcur);
-	while(count && pcur)
-	{
-		if(pcur->i_ID == c1) count++;
-		if(pcur->i_ID == c2) count--;
-		if(count) pcur = NextToken(pcur);
-	}
-
-	return pcur;
+	while(pcur && pcur->i_ID != id1 && pcur->i_ID != id2) pcur = NextToken(pcur);
+	return pcur ? pcur->i_ID : 0;
 }
 
 /*
- =======================================================================================================================
- =======================================================================================================================
- */
-token *Tool_ToRelationPrev(token *pcur)
-{
+=======================================================================================================================
+Tool_ToRelationNext : find the matching end symbol in the stream which matches the current symbol 
+This function counts nesting of symbols.
+
+=======================================================================================================================
+*/
+token *Tool_ToRelationNext(token *pcur)
+	{
 	/*~~~~~~~*/
 	int count;
-	int c1, c2;
+	int left_symbol, right_symbol;
+	token *next_token;
 	/*~~~~~~~*/
 
 	count = 1;
-	c1 = c2 = pcur->i_ID;
-	if(c1 == TOKEN_RPAREN)
-		c2 = TOKEN_LPAREN;
-	else if(c1 == TOKEN_RBRACE)
-		c2 = TOKEN_LBRACE;
-	else if(c1 == TOKEN_GREAT)
-		c2 = TOKEN_LESS;
-	pcur = PrevToken(pcur);
-	while(count && pcur)
-	{
-		if(pcur->i_ID == c1) count++;
-		if(pcur->i_ID == c2) count--;
-		if(count) pcur = PrevToken(pcur);
+	left_symbol = pcur->i_ID;
+	switch(left_symbol)
+		{
+		case TOKEN_LPAREN:
+			right_symbol = TOKEN_RPAREN;
+			break;
+		case TOKEN_LBRACE:
+			right_symbol = TOKEN_RBRACE;
+			break;
+		case TOKEN_LESS:
+			right_symbol = TOKEN_GREAT;
+			break;
+		case TOKEN_LARRAY:
+			right_symbol = TOKEN_RARRAY;
+			break;
+		default:
+			right_symbol = left_symbol;
+			Warning("Tool_ToRelationNext called with WRONG symbol, trying to match", pcur->pc_Value);
+				{
+				char *pt;
+				for(pt = pcur->pc_Value; *pt != '\0'; pt++)
+					printf("[%c] = 0x%x\n", *pt, *pt);
+				}
+			break;
+		}
+	next_token = NextToken(pcur);
+	while(count > 0 && next_token != NULL)
+		{
+		if(next_token->i_ID == left_symbol)
+			count++;
+		else if(next_token->i_ID == right_symbol)
+			count--;
+		if(count > 0)
+			next_token = NextToken(next_token);
+		}
+/*
+	if(next_token == NULL)
+		{
+		char buf[80];
+
+		sprintf(buf, "Line %d Col %d '%s'", pcur->line, pcur->column, pcur->pc_Value);
+		Warning("Tool_ToRelationNext run out of symbols while trying to match", buf);
+		}
+*/
+	return next_token;
 	}
 
+/*
+ =======================================================================================================================
+ Tool_ToRelationPrev : find the matching start symbol in the stream which matches the current symbol 
+ This function counts nesting of symbols.
+ =======================================================================================================================
+ */
+token *Tool_ToRelationPrev(token *pcur)
+	{
+	/*~~~~~~~*/
+	int count;
+	int right_symbol, left_symbol;
+	/*~~~~~~~*/
+
+	count = 1;
+	right_symbol = left_symbol = pcur->i_ID;
+	switch(right_symbol)
+		{
+		case TOKEN_RPAREN:
+			left_symbol = TOKEN_LPAREN;
+			break;
+		case TOKEN_RBRACE:
+			left_symbol = TOKEN_LBRACE;
+			break;
+		case TOKEN_GREAT:
+			left_symbol = TOKEN_LESS;
+			break;
+		default:
+			left_symbol = right_symbol;
+			Warning("Tool_ToRelationNext called with WRONG symbol, trying to match", pcur->pc_Value);
+			break;
+		}
+	pcur = PrevToken(pcur);
+	while(count > 0 && pcur != NULL)
+		{
+		if(pcur->i_ID == right_symbol)
+			count++;
+		if(pcur->i_ID == left_symbol)
+			count--;
+		if(count > 0)
+			pcur = PrevToken(pcur);
+		}
 	return pcur;
-}
+	}
 
 /*
  =======================================================================================================================
@@ -536,6 +604,7 @@ void Tool_ForceEmptyLineAfter(token *pcur)
 		switch(pnext->i_SubID)
 		{
 		case TOKEN_W_ELSE:	return;
+		case TOKEN_W_CATCH: pcur->ForceEOLAfter = (char) Config.CatchBlanksBefore; return;
 		}
 		break;
 	}
@@ -582,6 +651,10 @@ void Tool_ForceEmptyLineBefore(token *pcur)
 
 /*
  =======================================================================================================================
+ Tool_SetFlag : flag is offset of flag within pbeg...
+ ... go through ALL tokens from pbeg to pend and at the computed offset(flag) set the flag to given value
+
+ ... REALLY needs reworking ... 
  =======================================================================================================================
  */
 void Tool_SetFlag(token *pbeg, token *pend, char *flag, char set)
@@ -590,10 +663,13 @@ void Tool_SetFlag(token *pbeg, token *pend, char *flag, char set)
 	int of;
 	/*~~~*/
 
-	if(!pbeg) return;
-	if(!pend) return;
+	if(!pbeg)
+		return;
+	if(!pend)
+		return;
 	of = (char *) flag - (char *) pbeg;
-	for(; pbeg != pend->pst_Next; pbeg = NextToken(pbeg)) *(((char *) pbeg) + of) = set;
+	for(; pbeg != pend->pst_Next; pbeg = NextToken(pbeg))
+		*(((char *) pbeg) + of) = set;
 }
 
 /*
@@ -685,4 +761,48 @@ char *Tool_pLevelComment(token *pcur)
 		return(&pcur->pc_Value[4]);
 	else
 		return NULL;
+}
+
+/*
+ =======================================================================================================================
+ =======================================================================================================================
+ */
+int FixedComment(token *pcur)
+{
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	char	mark = pcur->pc_Value[2];
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+	if(Config.NoCmtIndent || pcur->WizardCmt) return 1;
+	if(mark && (pcur->i_ID == TOKEN_CPPCMT || pcur->CppComment))
+	{
+		if
+		(
+			mark == Config.CmtKeepCharCpp1
+		||	mark == Config.CmtKeepCharCpp2
+		||	mark == Config.CmtKeepCharCpp3
+		||	mark == Config.CmtKeepCharCpp4
+		) return 1;
+	}
+
+	if(pcur->i_ID == TOKEN_CCMT)
+	{
+		if
+		(
+			(pcur->pc_Value[2] == CMTMARK && pcur->pc_Value[3] == 'F')
+		||	(pcur->pc_Value[3] == CMTMARK && pcur->pc_Value[4] == 'F')
+		) return 1;
+		if
+		(
+			mark
+		&&	(
+				mark == Config.CmtKeepChar1
+			||	mark == Config.CmtKeepChar2
+			||	mark == Config.CmtKeepChar3
+			||	mark == Config.CmtKeepChar4
+			)
+		) return 1;
+	}
+
+	return 0;
 }

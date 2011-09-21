@@ -136,6 +136,7 @@ token *Grammar_Affect(token *pcur)
 
 /*
  =======================================================================================================================
+ Grammar_IsTypeCorrect : Is this function STILL needed?? 
  =======================================================================================================================
  */
 void Grammar_IsTypeCorrect(FileDes *pfile)
@@ -207,7 +208,7 @@ void Grammar_IsType(FileDes *pfile)
 	{
 		if(pcur->InASM) continue;
 		if(pcur->i_ID == TOKEN_CCMT) continue;
-		cret = 0;
+		cret = 0;			// does this need resetting?
 
 		if(pcur->i_ID != TOKEN_WORD)
 		{
@@ -395,7 +396,7 @@ kkk:
 		}
 
 		/* A function ? */
-lparen:
+
 		if(pnext->i_ID == TOKEN_LPAREN)
 		{
 			ptmp = Tool_ToRelationNext(pnext);
@@ -470,11 +471,13 @@ okvirtual:
 				goto Error;
 			}
 
-			if(pnext->i_ID == TOKEN_LPAREN) goto lparen;
 			if(pnext->i_ID == TOKEN_WORD) 
 			{
 				pnext = Tool_NextValid(pnext);
-				if(pnext->i_ID == TOKEN_SEMICOL) pnext = Tool_PrevValid(pnext);
+				if(pnext->i_ID == TOKEN_SEMICOL)
+					{	// what is happening here????
+					pnext = Tool_PrevValid(pnext);
+					}
 			}
 		}
 
@@ -998,7 +1001,7 @@ void Grammar_FctCall(FileDes *pfile)
 
 /*
  =======================================================================================================================
-    Aim: For &, * or -, determin if it's a binary or unary operator.
+    Aim: For &, * or -, determine if it's a binary or unary operator.
  =======================================================================================================================
  */
 void Grammar_UnaryBinary(FileDes *pfile)
@@ -1664,7 +1667,7 @@ void Grammar_InTemplate(FileDes *pfile)
 		pnext = Tool_NextValid(pcur);
 		if(pnext->i_ID != TOKEN_LESS) continue;
 		pend = Tool_ToRelationNext(pnext);
-		if(!pend) Syntaxe();
+		if(!pend) Syntaxe(pcur->line, pcur->column);
 		while(pnext != pend)
 		{
 			pnext->InTemplate = 1;

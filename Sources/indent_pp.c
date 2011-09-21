@@ -232,7 +232,7 @@ void Indent_PPDivers(FileDes *pfile)
 				ii = pcur->ForceSpaceAfter;
 				pcur->ForceSpaceAfter = 0;
 				pcur = Tool_ToRelationNext(pcur);
-				if(!pcur) Syntaxe();
+				if(!pcur) Syntaxe(pcur->line, pcur->column);
 				pcur = pcur->pst_Prev;
 				ii += pcur->ForceSpaceAfter;
 				pcur->ForceSpaceAfter = 0;

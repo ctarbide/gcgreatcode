@@ -17,8 +17,8 @@
 #ifndef __ERROR_H__
 #define __ERROR_H__
 
-#include "assert.h"
+#include <assert.h>
 extern void Fatal(char *, char *);
 extern void Warning(char *, char *);
-extern void Syntaxe(void);
+extern void Syntaxe(int line, int col);
 #endif /* __ERROR_H__ */

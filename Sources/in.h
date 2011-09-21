@@ -24,7 +24,7 @@
     An open file
  -----------------------------------------------------------------------------------------------------------------------
  */
-typedef struct	FileDes_
+typedef struct FileDes_
 {
 	char			*psz_FileName;
 	char			*pc_Buffer;

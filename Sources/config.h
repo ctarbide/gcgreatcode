@@ -17,57 +17,6 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-/*  Begin OS specific options */
-
-/*
-
-#ifdef WIN32
-
-#include "io.h"
-
-#define GC_STRDUP _strdup
-#define GC_STRICMP _stricmp
-#define GC_UNLINK _unlink
-#define GC_ACCESS _access
-
-#ifdef _S_IWRITE
-enum { GC_ACCESS_WRITE_OK=2, GC_S_IWRITE=_S_IWRITE };
-#endif
-
-#define GC_CHMOD _chmod
-#define GC_STRDATE _strdate
-#define GC_STRTIME _strtime
-
-#else
-
-#include <sys/types.h> // for chmod 
-#include <sys/stat.h> // for stat() 
-#include <unistd.h>
-#include <dirent.h> //POSIX COMPLIANT
-
-#define GC_STRDUP strdup
-#define GC_STRICMP strcasecmp
-#define GC_UNLINK unlink
-#define GC_ACCESS access
-enum { GC_ACCESS_WRITE_OK=W_OK, GC_S_IWRITE=S_IWUSR };
-#define GC_CHMOD chmod
-#define GC_STRDATE(value) "NO_DATE"
-#define GC_STRTIME(value) "NO_TIME"
-
-#endif
-
-#ifndef _MAX_PATH
-#ifdef PATH_MAX
-#define _MAX_PATH PATH_MAX
-#else
-#define _MAX_PATH 4096
-#endif
-#endif
-
-*/
-
-/*  End OS specific options */
-
 #ifdef CONFIG_GLOB
 #define EXTERN
 #else
@@ -100,7 +49,7 @@ enum { GC_ACCESS_WRITE_OK=W_OK, GC_S_IWRITE=S_IWUSR };
  -----------------------------------------------------------------------------------------------------------------------
  */
 
-typedef struct	tdst_Config_
+typedef struct tdst_Config_
 {
 	int CanOut;					/* No generate output files */
 	int Verbose;				/* Display infos during process */
@@ -124,6 +73,8 @@ typedef struct	tdst_Config_
 	int CmtFirstLineFillStar;	/* Fill cmt first line with '*' */
 	int CmtKeepCpp;				/* Keep C++ comments */
 	int ForceFctDefDeclSplit;	/* Force function defintions and declartions to split */
+	int JavaDoc;				/* Define java doc style */
+	int FctJavaDoc;				/* Define java doc style for functions */
 	int ForceBrace;				/* To force brace around statements */
 	int ConcatIf;				/* Concat if, while, for */
 	int MoveDeclAffect;			/* Move affect in decl */
@@ -158,6 +109,7 @@ typedef struct	tdst_Config_
 	int AddCmtFct;				/* Add empty comments before functions */
 	int AddCmtFctClass;			/* Idem inline class */
 	int TrailingCmtStyle;		/* Trailing comment style */
+	int SplitBeforeAtInFctCmts; /* Split line in comments for '@' */
 	int AddCmtClassAccess;
 	int SplitBoolBefore;
 	int AutoSepFctDecl;
@@ -168,6 +120,14 @@ typedef struct	tdst_Config_
 	int AutoSepClass;
 	int CmtDeclMaxLevel;
 	int NoCmtIndent;
+	int CmtKeepChar1;
+	int CmtKeepChar2;
+	int CmtKeepChar3;
+	int CmtKeepChar4;
+	int CmtKeepCharCpp1;
+	int CmtKeepCharCpp2;
+	int CmtKeepCharCpp3;
+	int CmtKeepCharCpp4;
 	int ConcatInlineClass;
 	int ConcatSwitch;
 	int LeftDecl;
@@ -208,6 +168,7 @@ typedef struct	tdst_Config_
 	int ConcatStrings;
 	int EmptyFctBlanks;
 	int AccessBlanks;
+	int CatchBlanksBefore;
 	int AccessBlanksBefore;
 	int LabelBlanks;
 	int EolBeforeFctCmt;
@@ -250,6 +211,7 @@ typedef struct	tdst_Config_
 	int ConcatElseIf;
 	int TryHarderToKeepEmptyLines;
 	int StaticInit;
+	int CmtCategCtyle;
 	int doxygen;
 } tdst_Config;
 extern tdst_Config	Config;
@@ -291,16 +253,17 @@ EXTERN int	gi_NumReplace;
 EXTERN char *gapsz_FileInsert[MAX_DEF_FILEINSERT];
 EXTERN int	gi_NumFileInsert;
 
-extern char gz_LstFileName[1024];
-extern char gz_CfgFileName[1024];
+extern char *gz_LstFileName;
+extern char *gz_CfgFileName;
 extern char *gz_FixmeComment;
 
 /*$2
  -----------------------------------------------------------------------------------------------------------------------
-    Protos
+    Prototypes
  -----------------------------------------------------------------------------------------------------------------------
  */
 
+extern int ConvertFile(char *);
 extern void ConvertFileToArgv(FILE *, int *);
 extern void Usage(void);
 extern void Default(void);

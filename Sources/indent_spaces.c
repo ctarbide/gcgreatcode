@@ -41,7 +41,7 @@ void Indent_SpacesBase(FileDes *pfile)
 	token	*pend;
 	/*~~~~~~~~~~~~~~~~~~*/
 
-	for(pcur = pfile->pst_RootToken; pcur; pcur = NextToken(pcur))
+	for(pcur = pfile->pst_RootToken; pcur && *pcur->pc_Value; pcur = NextToken(pcur))
 	{
 		if(pcur->NoIndent)
 		{
@@ -557,6 +557,18 @@ recom:
 						}
 
 						if(tt <= 0) tt = 1;
+
+						/* We don't want word of struct, enum, union, class to be align */
+						if
+						(
+							(pprev->i_SubSubID == TOKEN_WW_UNION)
+						||	(pprev->i_SubSubID == TOKEN_WW_STRUCT)
+						||	(pprev->i_SubSubID == TOKEN_WW_ENUM)
+						)
+						{
+							tt = 1;
+						}
+
 						Tool_ForceSpaceBefore(pnext, tt);
 					}
 				}
@@ -1216,6 +1228,11 @@ void Indent_Switch(FileDes *pfile)
 			}
 
 			pend = Tool_ToRelationNext(pcur);
+			if(Config.SwitchStyle == 5)
+			{
+				pcur->AddSpaceBefore = pend->AddSpaceBefore = (Config.TabSize + 1) / 2;
+			}
+
 			if(Config.SwitchStyle == 2)
 			{
 				pcur->StmtLevel++;

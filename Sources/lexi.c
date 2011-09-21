@@ -101,6 +101,8 @@ Lexi_tdst_Token		gast_List[] =
 	{ "else", TOKEN_W_ELSE, 0 },
 	{ "while", TOKEN_W_WHILE, 0 },
 	{ "do", TOKEN_W_DO, 0 },
+	{ "try", TOKEN_W_TRY, 0 },
+	{ "catch", TOKEN_W_CATCH, 0 },
 	{ "for", TOKEN_W_FOR, 0 },
 	{ "return", TOKEN_W_RETURN, 0 },
 	{ "break", TOKEN_W_BREAK, 0 },
@@ -557,6 +559,9 @@ void Lexi(FileDes *pfile)
 		}
 
 		memset(pfile->pst_LastToken, 0, sizeof(token));
+
+		pfile->pst_LastToken->line = gi_NumLine;
+		pfile->pst_LastToken->column = col;
 
 		/* Link new token to list */
 		pfile->pst_LastToken->pst_Prev = pst_Temp;

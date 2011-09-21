@@ -32,13 +32,13 @@
  -----------------------------------------------------------------------------------------------------------------------
  */
 
-typedef struct	Lexi_tdst_ExtToken_
+typedef struct Lexi_tdst_ExtToken_
 {
 	char	*name;
 	char	*as;
 } Lexi_tdst_ExtToken;
 
-typedef struct	Lexi_tdst_Token_
+typedef struct Lexi_tdst_Token_
 {
 	char	*name;
 	int		id;
@@ -144,6 +144,8 @@ extern char					*name_of_token[];
 #define TOKEN_W_CMT_FUNC		122
 #define TOKEN_W_CMT_FUNC_PARAM	123
 #define TOKEN_W_CMT_OPTION		124
+#define TOKEN_W_TRY				125
+#define TOKEN_W_CATCH			126
 
 /* Subsub ID */
 #define TOKEN_WW_STRUCT			150
@@ -184,12 +186,16 @@ extern char					*name_of_token[];
     Structure to define a token.
  -----------------------------------------------------------------------------------------------------------------------
  */
-typedef struct	token_
+typedef struct token_
 {
 	int				i_ID;			/* ID of token (TOKEN_???) */
 	int				i_SubID;		/* Sub ID */
 	int				i_SubSubID;
-	int				i_Type;			/* Bitfield for type */
+//	int				i_Type;			/* BitField for type */
+
+	int				line;			/* line number - start of token */
+	int				column;			/* column number - start of token */
+
 	char			*pc_Value;		/* String of token */
 	struct token_	*pst_Prev;		/* To link tokens */
 	struct token_	*pst_Next;
@@ -206,12 +212,12 @@ typedef struct	token_
 	char			InFct;			/* In function body */
 	char			InFctDef;		/* In function definition */
 	char			InFctDecl;		/* In function declaration */
-	char			InParen;		/* Token is inside a paren expression */
+	char			InParen;		/* Token is inside a parenthesis expression */
 	char			WhileForDo;		/* A while for a do */
 	struct token_	*OpenParen;		/* If InParen, address of open paren */
 	char			BegStmtDecl;	/* Begin of a statement decl */
 	char			EndStmtDecl;	/* End of a statement decl */
-	char			InStmtDecl;		/* Inside a stmt decl */
+	char			InStmtDecl;		/* Inside a statement decl */
 	char			DeclName;		/* Name in a declaration */
 	char			BeginDecl;		/* Begin of a declaration statement */
 	char			EndDecl;		/* End of a declaration statement */
@@ -282,6 +288,7 @@ typedef struct	token_
 	char			ForceSpaceAfter;
 	char			ForceEOLAfter;
 	int				AddSpaceAfter;
+	int				AddSpaceBefore;
 } token;
 
 /*$2

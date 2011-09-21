@@ -59,7 +59,24 @@ void WriteToken(FILE *h, FileDes *pfile, token *pcur)
 		/* Unix style for EOL */
 		if(Config.UnixEOL)
 		{
+			/* remove ALL CR characters from token */
 			pz = strchr(pcur->pc_Value, '\r');
+
+			if(pz != NULL)
+				{
+				char *from, *to;
+
+				for(from = &pz[1], to = pz; *from != '\0'; )
+					{
+					if(*from == '\r')
+						from++;
+					else
+						*to++ = *from++;
+					}
+				*to = '\0';
+				}
+
+			/*
 			while(pz)
 			{
 				if(pz[1] == '\n')
@@ -70,6 +87,8 @@ void WriteToken(FILE *h, FileDes *pfile, token *pcur)
 
 				pz = strchr(pz + 1, '\r');
 			}
+			*/
+
 		}
 
 		/* Dos style */
@@ -100,28 +119,39 @@ void WriteToken(FILE *h, FileDes *pfile, token *pcur)
 		{
 			while(pcur->pc_Value[len - 1] == ' ')
 			{
-				pcur->pc_Value[len - 1] = 0;
+				/* leave trailing space if preceded by a '\\' */
+				if(len > 1 && pcur->pc_Value[len - 2] == '\\') break;
+				pcur->pc_Value[len - 1] = '\0';
 				len--;
 			}
 		}
 
 		/* Write token */
+		for(i = 0; i < pcur->AddSpaceBefore; i++)
+		{
+			fputc(' ', h);
+		}
+
 		fwrite(pcur->pc_Value, 1, strlen(pcur->pc_Value), h);
 		gi_NumChars += strlen(pcur->pc_Value);
 
 		/* Write EOL after the token */
-		if(pcur->pst_Next && pcur->pst_Next->NoIndent) pcur->ForceEOLAfter = (char) pcur->WasEOLAfter;
-		if(pcur->pst_Next && !pcur->pst_Next->i_ID) pcur->ForceEOLAfter = (char) Config.EndBlanks;
+		if(pcur->pst_Next && pcur->pst_Next->NoIndent)
+			pcur->ForceEOLAfter = (char) pcur->WasEOLAfter;
+		if(pcur->pst_Next && !pcur->pst_Next->i_ID)
+			pcur->ForceEOLAfter = (char) Config.EndBlanks;
 
 		for(i = 0; i < pcur->ForceEOLAfter; i++)
 		{
-			if(!Config.UnixEOL) fputc('\r', h);
+			if(!Config.UnixEOL)
+				fputc('\r', h);
 			fputc('\n', h);
 			gi_NumLines++;
 		}
 
 		/* Write spaces after the token */
-		if(pcur->pst_Next && pcur->pst_Next->NoIndent) pcur->ForceSpaceAfter = (char) pcur->WasSpaceAfter;
+		if(pcur->pst_Next && pcur->pst_Next->NoIndent)
+			pcur->ForceSpaceAfter = (char) pcur->WasSpaceAfter;
 
 		if(Config.OutTab && (pcur->ForceSpaceAfter > 1))
 		{
@@ -133,10 +163,12 @@ void WriteToken(FILE *h, FileDes *pfile, token *pcur)
 				else
 					col = 0;
 				col1 = Tool_ToTab(col);
-				if(col1 == col) col1 += Config.TabSize;
+				if(col1 == col)
+					col1 += Config.TabSize;
 				if(col1 - col <= pcur->ForceSpaceAfter)
 				{
-					if(pcur->ForceSpaceAfter == 3) pcur->ForceSpaceAfter = 3;
+					if(pcur->ForceSpaceAfter == 3)
+						pcur->ForceSpaceAfter = 3;
 					fputc('\t', h);
 					gi_NumChars++;
 					jj = pcur->ForceSpaceAfter;

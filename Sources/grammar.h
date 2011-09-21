@@ -19,7 +19,7 @@
 
 extern void Grammar_InsideParen(FileDes *);
 extern void Grammar_IsType(FileDes *);
-extern void Grammar_IsTypeCorrect(FileDes *);
+extern void Grammar_IsTypeCorrect(FileDes *);	// needed ??
 extern void Grammar_FctDef(FileDes *);
 extern void Grammar_FctParams(FileDes *);
 extern void Grammar_FctCall(FileDes *);
@@ -49,7 +49,7 @@ typedef struct
 	int		i_NumInc;
 	int		i_DepDir;
 	int		i_Dep;
-	FileDes *	ai_IncludeBy[MAX_INCLUDE];
+	int		ai_IncludeBy[MAX_INCLUDE];
 	int		i_NumIncludeBy;
 } tdst_Include;
 extern tdst_Include gast_Includes[MAX_INCLUDE];
