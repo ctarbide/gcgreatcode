@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- CVS ID : $Id: gc.bkl,v 1.1 2011/09/20 19:23:29 jm-dk Exp $ -->
+<!-- CVS ID : $Id: gc.bkl,v 1.2 2011/09/21 20:59:54 jm-dk Exp $ -->
 
 <!--
 
@@ -29,7 +29,8 @@ Enjoy :-)
 	<!-- gc Great Code -->
 	<exe id="gc" template="simple">
 		<app-type>console</app-type>
-		
+
+    <define>_CRT_SECURE_NO_WARNINGS</define>
 		<!-- include files -->
 			<!-- NO EXTRA INCLUDE FILES NEEDED -->
 
