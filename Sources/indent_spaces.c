@@ -560,11 +560,11 @@ recom:
 
 						/* We don't want word of struct, enum, union, class to be align */
 						if
-						(
+						(pprev && (
 							(pprev->i_SubSubID == TOKEN_WW_UNION)
 						||	(pprev->i_SubSubID == TOKEN_WW_STRUCT)
 						||	(pprev->i_SubSubID == TOKEN_WW_ENUM)
-						)
+						))
 						{
 							tt = 1;
 						}

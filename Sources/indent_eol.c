@@ -1429,6 +1429,7 @@ void Indent_RemoveEOL(FileDes *pfile)
 			do
 			{
 				pnext = PrevToken(pnext);
+				if(!pnext) Syntaxe(pcur->line, pcur->column);
 				if(Config.BreakDoWhile)
 					pnext->ForceEOLAfter = 1;
 				else
