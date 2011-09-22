@@ -1,4 +1,4 @@
-/*$T lexi.h GC 1.139 12/16/04 22:48:58 */
+/*$T \Sources/lexi.h GC 1.150 2011-09-22 20:52:18 */
 
 
 /*$6
@@ -191,8 +191,11 @@ typedef struct token_
 	int				i_ID;			/* ID of token (TOKEN_???) */
 	int				i_SubID;		/* Sub ID */
 	int				i_SubSubID;
-//	int				i_Type;			/* BitField for type */
 
+	/*
+	 * int i_Type;
+	 * /* BitField for type
+	 */
 	int				line;			/* line number - start of token */
 	int				column;			/* column number - start of token */
 

@@ -1,4 +1,4 @@
-/*$T main.c GC 1.139 12/15/04 23:58:53 */
+/*$T \Sources/main.c GC 1.150 2011-09-22 20:52:18 */
 
 
 /*$6
@@ -26,7 +26,6 @@
 #include <direct.h>
 #else
 #endif
-
 #include "config.h"
 #include "in.h"
 #include "out.h"
@@ -61,7 +60,7 @@ void ProcessFiles(void)
 		if(res != 2 && Config.Verbose) printf("Processing %s   ", gpst_Files[i].psz_FileName);
 		if(!res)
 		{
-			memcpy(&Config, &Config1, sizeof(tdst_Config));		/* reload configuration - just in case it changed */
+			memcpy(&Config, &Config1, sizeof(tdst_Config)); /* reload configuration - just in case it changed */
 			Lexi(&gpst_Files[i]);
 			Grammar(&gpst_Files[i]);
 
@@ -123,12 +122,12 @@ void ProcessFiles(void)
  */
 int main(int argc, char *argv[])
 {
-	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	/*~~~~~~~~~~~~~~~~~~~~~~~~*/
 	int		i;
 	char	asz_Temp[_MAX_PATH];
 	char	cfg_file[_MAX_PATH];
 	char	*psz_Temp;
-	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	/*~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	gi_NumIncludesDirs = 0;
 
@@ -144,7 +143,6 @@ int main(int argc, char *argv[])
 	 * Retrieve the path where GC.exe is run. This will use to find the configurations
 	 * files.
 	 */
-	
 	strcpy(asz_Temp, argv[0]);
 
 	psz_Temp = strrchr(asz_Temp, DIR_SEPARATOR);
@@ -156,13 +154,13 @@ int main(int argc, char *argv[])
 
 	/* Search for -help to print usage */
 	for(i = 1; i < argc; i++)
-		{
+	{
 		if(!strcasecmp(argv[i], "-help") || !strcasecmp(argv[i], "/?") || !strcasecmp(argv[i], "-h"))
-			{
+		{
 			Usage();
 			return 0;
-			}
 		}
+	}
 
 	/* Init default options */
 	Default();
@@ -172,12 +170,12 @@ int main(int argc, char *argv[])
 	strcat(cfg_file, gz_CfgFileName);
 
 	if(ConvertFile(cfg_file) == 0)
-		{
+	{
 		/* Only read the global file if the local one does not exist */
 		strcat(asz_Temp, DIR_SEPARATOR_STR);
 		strcat(asz_Temp, gz_CfgFileName);
 		ConvertFile(asz_Temp);
-		}
+	}
 
 	/* Treat options */
 	Options(argc - 1, argv + 1);

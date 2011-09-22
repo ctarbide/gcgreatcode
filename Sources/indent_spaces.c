@@ -1,4 +1,4 @@
-/*$T indent_spaces.c GC 1.139 12/15/04 23:58:36 */
+/*$T \Sources/indent_spaces.c GC 1.150 2011-09-22 20:52:18 */
 
 
 /*$6
@@ -560,11 +560,14 @@ recom:
 
 						/* We don't want word of struct, enum, union, class to be align */
 						if
-						(pprev && (
-							(pprev->i_SubSubID == TOKEN_WW_UNION)
-						||	(pprev->i_SubSubID == TOKEN_WW_STRUCT)
-						||	(pprev->i_SubSubID == TOKEN_WW_ENUM)
-						))
+						(
+							pprev
+						&&	(
+								(pprev->i_SubSubID == TOKEN_WW_UNION)
+							||	(pprev->i_SubSubID == TOKEN_WW_STRUCT)
+							||	(pprev->i_SubSubID == TOKEN_WW_ENUM)
+							)
+						)
 						{
 							tt = 1;
 						}

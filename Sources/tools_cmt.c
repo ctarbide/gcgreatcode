@@ -1,4 +1,4 @@
-/*$T tools_cmt.c GC 1.140 12/28/04 09:46:42 */
+/*$T \Sources/tools_cmt.c GC 1.150 2011-09-22 20:52:18 */
 
 
 /*$6
@@ -29,7 +29,6 @@
 #include "error.h"
 #include "tools.h"
 #include "os.h"
-
 
 /*
  =======================================================================================================================
@@ -135,7 +134,7 @@ int Tool_DeleteCommentMarks(token *pcur, char **pp, int markCnt)
  */
 void Tool_UnSplitCmt(token *pcur)
 {
-	/*~~~~~~~~~~~~*/
+	/*~~~~~~~~~~~~~*/
 	char	*p, *p1;
 	char	*gn;
 	char	*memo;
@@ -144,7 +143,7 @@ void Tool_UnSplitCmt(token *pcur)
 	int		typespec;
 	int		column;
 	int		code;
-	/*~~~~~~~~~~~~*/
+	/*~~~~~~~~~~~~~*/
 
 	p = pcur->pc_Value;
 
@@ -446,12 +445,14 @@ void Tool_SplitCmtFirstLine(token *pcur)
 	/* Marked comments */
 	CmtMark(&p, &gn);
 	colbeg = pcur->Col + 5;
+
 	/* do not include CPP comment into c comment */
 	if(pcur->CppComment && Config.CmtKeepCpp)
 	{
 		gn = memo;
 		goto mark1;
 	}
+
 	if(!Config.CmtFirstLineBreakFirst) goto mark1;
 	for(;;)
 	{
@@ -1522,33 +1523,29 @@ void Tool_InsertSingleSep(FileDes *pfile, token *pcur, char sep)
  */
 void Tool_AddTag(FileDes *pfile, token *pcur)
 {
-	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-	char	*p;
-	char	*file_name;
-	char the_date[64];
-	char the_line[128];
-	
-	time_t now;
-	struct tm *now_tm;
-	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	/*~~~~~~~~~~~~~~~~~~~~~~*/
+	char		*p;
+	char		*file_name;
+	char		the_date[64];
+	char		the_line[128];
+	time_t		now;
+	struct tm	*now_tm;
+	/*~~~~~~~~~~~~~~~~~~~~~~*/
 
 	p = pcur->pc_Value;
 	if(p[2] != CMTMARK || p[3] != 'T') return;
 
 	file_name = strrchr(pfile->psz_FileName, DIR_SEPARATOR);
-	if(file_name == NULL)
-		file_name = pfile->psz_FileName;
+	if(file_name == NULL) file_name = pfile->psz_FileName;
 
-    now = time(NULL);
-    now_tm = localtime(&now);
+	now = time(NULL);
+	now_tm = localtime(&now);
 #ifdef _WIN32
 	strftime(the_date, 64, "%Y-%m-%d %H:%M:%S", now_tm);
 #else
 	strftime(the_date, 64, "%F %T", now_tm);
 #endif
-	
 	sprintf(the_line, "/*%cT %s GC %d.%03d %s */", CMTMARK, file_name, VERSION, REVISION, the_date);
-
 
 	free(pcur->pc_Value);
 	pcur->pc_Value = strdup(the_line);

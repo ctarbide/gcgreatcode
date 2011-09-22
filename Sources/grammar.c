@@ -1,4 +1,4 @@
-/*$T grammar.c GC 1.139 12/16/04 22:47:33 */
+/*$T \Sources/grammar.c GC 1.150 2011-09-22 20:52:17 */
 
 
 /*$6
@@ -583,7 +583,7 @@ token *Grammar_StmtLevel(FileDes *pfile, token *pcur, int StmtLevel)
 		case TOKEN_LBRACE:
 			/* Extern "C" */
 			pnext = Tool_PrevValid(pcur);
-			if(pnext && !strcasecmp (pnext->pc_Value, "\"C\""))
+			if(pnext && !strcasecmp(pnext->pc_Value, "\"C\""))
 			{
 				if(Config.IndentExternC)
 				{
@@ -759,7 +759,6 @@ token *Grammar_StmtLevel(FileDes *pfile, token *pcur, int StmtLevel)
 
 				continue;
 			}
-
 			break;
 		}
 
@@ -1379,7 +1378,11 @@ void Grammar(FileDes *pfile)
 	Grammar_LabelDecl(pfile);
 	Grammar_Class(pfile);
 	Grammar_IsType(pfile);
-//	Grammar_IsTypeCorrect(pfile);  ?? Needed ??
+
+	/*
+	 * Grammar_IsTypeCorrect(pfile);
+	 * ?? Needed ??
+	 */
 	Grammar_InTemplate(pfile);
 	Grammar_InsideParen(pfile);
 	Grammar_IsType(pfile);

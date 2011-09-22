@@ -1,4 +1,4 @@
-/*$T indent_eol.c GC 1.139 12/16/04 22:48:04 */
+/*$T \Sources/indent_eol.c GC 1.150 2011-09-22 20:52:17 */
 
 
 /*$6
@@ -234,7 +234,7 @@ recom:
 					pnext = Tool_NextValid(pnext);
 				}
 
-				if (Tool_SearchFirst(pnext, TOKEN_SEMICOL, TOKEN_LBRACE) == TOKEN_SEMICOL)
+				if(Tool_SearchFirst(pnext, TOKEN_SEMICOL, TOKEN_LBRACE) == TOKEN_SEMICOL)
 				{
 					pprev = Tool_PrevValid(pcur1);
 					while(pprev && pprev->InPP) pprev = Tool_PrevValid(pprev);
@@ -467,9 +467,9 @@ void Indent_SplitTooLong(FileDes *pfile)
 		switch(pcur->i_ID)
 		{
 		case TOKEN_CPPCMT:
-			if (pcur->pst_Prev != 0)
+			if(pcur->pst_Prev != 0)
 			{
-				if (pcur->pst_Prev->i_ID != TOKEN_CPPCMT && pcur->pst_Prev->i_ID != TOKEN_CCMT) break;
+				if(pcur->pst_Prev->i_ID != TOKEN_CPPCMT && pcur->pst_Prev->i_ID != TOKEN_CCMT) break;
 
 				/* place CPP comment on separate lines */
 				pcur->ForceEOLAfter = pcur->pst_Prev->ForceEOLAfter = 1;
@@ -1449,7 +1449,6 @@ void Indent_RemoveEOL(FileDes *pfile)
 				{
 					pend = Tool_ToRelationNext(pnext);
 					if(!pend) Syntaxe(pnext->line, pnext->column);
-
 					while((pnext != pend) && (pnext->i_ID != TOKEN_EOL)) pnext = NextToken(pnext);
 					if(pnext->i_ID == TOKEN_RPAREN && LastOnLine(pnext)) pcur->ForceEOLAfter = 0;
 				}
@@ -1828,9 +1827,9 @@ void BraceStyle(FileDes *pfile, token *pcur, token *pend, int style)
 		return;
 	}
 
-	if (style == 5  && pcur->StmtLevel)
+	if(style == 5 && pcur->StmtLevel)
 	{
-		pend->AddSpaceBefore = pcur->AddSpaceBefore = (Config.TabSize + 1)/2;
+		pend->AddSpaceBefore = pcur->AddSpaceBefore = (Config.TabSize + 1) / 2;
 	}
 }
 

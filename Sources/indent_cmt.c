@@ -1,4 +1,4 @@
-/*$T indent_cmt.c GC 1.139 12/16/04 22:47:56 */
+/*$T \Sources/indent_cmt.c GC 1.150 2011-09-22 20:52:17 */
 
 
 /*$6
@@ -781,7 +781,7 @@ void Indent_CmtCommentFirstLine(FileDes *pfile)
 		/* Class */
 		pnext = pcur->pst_Next;
 		while(pnext->IsType) pnext = pnext->pst_Next;
-		if(pnext && pnext->i_ID == TOKEN_LESS) 
+		if(pnext && pnext->i_ID == TOKEN_LESS)
 		{
 			pnext = Tool_ToRelationNext(pnext);
 			if(pnext) pnext = pnext->pst_Next;

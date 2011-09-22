@@ -1,4 +1,4 @@
-/*$T grammar.h GC 1.139 12/15/04 23:59:34 */
+/*$T \Sources/grammar.h GC 1.150 2011-09-22 20:52:17 */
 
 
 /*$6
@@ -19,7 +19,7 @@
 
 extern void Grammar_InsideParen(FileDes *);
 extern void Grammar_IsType(FileDes *);
-extern void Grammar_IsTypeCorrect(FileDes *);	// needed ??
+extern void Grammar_IsTypeCorrect(FileDes *);	/* needed ?? */
 extern void Grammar_FctDef(FileDes *);
 extern void Grammar_FctParams(FileDes *);
 extern void Grammar_FctCall(FileDes *);

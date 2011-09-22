@@ -1,4 +1,4 @@
-/*$T grammar_decl.c GC 1.140 12/29/04 11:34:32 */
+/*$T \Sources/grammar_decl.c GC 1.150 2011-09-22 20:52:17 */
 
 
 /*$6
@@ -19,7 +19,6 @@
 #ifndef __APPLE__
 #include <malloc.h>
 #endif
-
 #include "config.h"
 #include "lexi.h"
 #include "error.h"
@@ -136,7 +135,7 @@ token *Grammar_Affect(token *pcur)
 
 /*
  =======================================================================================================================
- Grammar_IsTypeCorrect : Is this function STILL needed?? 
+    Grammar_IsTypeCorrect : Is this function STILL needed??
  =======================================================================================================================
  */
 void Grammar_IsTypeCorrect(FileDes *pfile)
@@ -208,7 +207,7 @@ void Grammar_IsType(FileDes *pfile)
 	{
 		if(pcur->InASM) continue;
 		if(pcur->i_ID == TOKEN_CCMT) continue;
-		cret = 0;			// does this need resetting?
+		cret = 0;	/* does this need resetting? */
 
 		if(pcur->i_ID != TOKEN_WORD)
 		{
@@ -396,7 +395,6 @@ kkk:
 		}
 
 		/* A function ? */
-
 		if(pnext->i_ID == TOKEN_LPAREN)
 		{
 			ptmp = Tool_ToRelationNext(pnext);
@@ -471,13 +469,13 @@ okvirtual:
 				goto Error;
 			}
 
-			if(pnext->i_ID == TOKEN_WORD) 
+			if(pnext->i_ID == TOKEN_WORD)
 			{
 				pnext = Tool_NextValid(pnext);
 				if(pnext->i_ID == TOKEN_SEMICOL)
-					{	// what is happening here????
+				{	/* what is happening here???? */
 					pnext = Tool_PrevValid(pnext);
-					}
+				}
 			}
 		}
 
@@ -601,10 +599,10 @@ recom1:
 		&&	(pnext->i_ID != TOKEN_SEMICOL)
 		&&	(pnext->i_ID != TOKEN_AFFECT)
 		&&	(pnext->i_ID != TOKEN_LARRAY)
-		&&	(pnext->i_ID != TOKEN_LPAREN)			/* Function proto */
-		&&	(pnext->i_ID != TOKEN_RPAREN)			/* Function params */
-		&&	(pnext->i_ID != TOKEN_LBRACE)			/* Function decl */
-		&&	(pnext->i_ID != TOKEN_COMMA)			/* Functions params */
+		&&	(pnext->i_ID != TOKEN_LPAREN)	/* Function proto */
+		&&	(pnext->i_ID != TOKEN_RPAREN)	/* Function params */
+		&&	(pnext->i_ID != TOKEN_LBRACE)	/* Function decl */
+		&&	(pnext->i_ID != TOKEN_COMMA)	/* Functions params */
 		)
 		{
 			/* Test bitfield */

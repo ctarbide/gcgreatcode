@@ -1,4 +1,4 @@
-/*$T tools.c GC 1.139 12/25/04 16:32:54 */
+/*$T \Sources/tools.c GC 1.150 2011-09-22 20:52:18 */
 
 
 /*$6
@@ -36,10 +36,8 @@
 void Tool_MoveTokenBefore(FileDes *pfile, token *_pst_ToMove, token *pref)
 {
 	/* Unlink */
-	if(_pst_ToMove->pst_Prev)
-		_pst_ToMove->pst_Prev->pst_Next = _pst_ToMove->pst_Next;
-	if(_pst_ToMove->pst_Next)
-		_pst_ToMove->pst_Next->pst_Prev = _pst_ToMove->pst_Prev;
+	if(_pst_ToMove->pst_Prev) _pst_ToMove->pst_Prev->pst_Next = _pst_ToMove->pst_Next;
+	if(_pst_ToMove->pst_Next) _pst_ToMove->pst_Next->pst_Prev = _pst_ToMove->pst_Prev;
 
 	/* Link */
 	_pst_ToMove->pst_Next = pref;
@@ -109,29 +107,18 @@ token *Tool_UnlinkToken(FileDes *pfile, token *pcur)
  =======================================================================================================================
  */
 void TokenString(token *pcur)
-	{
+{
 	switch(pcur->i_ID)
-		{
-		case TOKEN_BREAKLINE:
-			pcur->pc_Value = strdup("\\");
-			break;
-		case TOKEN_LBRACE:
-			pcur->pc_Value = strdup("{");
-			break;
-		case TOKEN_RBRACE:
-			pcur->pc_Value = strdup("}");
-			break;
-		case TOKEN_LPAREN:	
-			pcur->pc_Value = strdup("("); 
-			break;
-		case TOKEN_RPAREN:	
-			pcur->pc_Value = strdup(")");
-			break;
-		}
-
-	if(pcur->ForceEOLAfter)
-		pcur->ForceEOLAfter = 1;
+	{
+	case TOKEN_BREAKLINE:	pcur->pc_Value = strdup("\\"); break;
+	case TOKEN_LBRACE:		pcur->pc_Value = strdup("{"); break;
+	case TOKEN_RBRACE:		pcur->pc_Value = strdup("}"); break;
+	case TOKEN_LPAREN:		pcur->pc_Value = strdup("("); break;
+	case TOKEN_RPAREN:		pcur->pc_Value = strdup(")"); break;
 	}
+
+	if(pcur->ForceEOLAfter) pcur->ForceEOLAfter = 1;
+}
 
 /*
  =======================================================================================================================
@@ -337,111 +324,116 @@ int Tool_SearchFirst(token *pcur, int id1, int id2)
 }
 
 /*
-=======================================================================================================================
-Tool_ToRelationNext : find the matching end symbol in the stream which matches the current symbol 
-This function counts nesting of symbols.
-
-=======================================================================================================================
-*/
+ =======================================================================================================================
+    Tool_ToRelationNext : find the matching end symbol in the stream which matches the current symbol This function
+    counts nesting of symbols.
+ =======================================================================================================================
+ */
 token *Tool_ToRelationNext(token *pcur)
-	{
-	/*~~~~~~~*/
-	int count;
-	int left_symbol, right_symbol;
-	token *next_token;
-	/*~~~~~~~*/
+{
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	int		count;
+	int		left_symbol, right_symbol;
+	token	*next_token;
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	count = 1;
 	left_symbol = pcur->i_ID;
 	switch(left_symbol)
+	{
+	case TOKEN_LPAREN:
+		right_symbol = TOKEN_RPAREN;
+		break;
+
+	case TOKEN_LBRACE:
+		right_symbol = TOKEN_RBRACE;
+		break;
+
+	case TOKEN_LESS:
+		right_symbol = TOKEN_GREAT;
+		break;
+
+	case TOKEN_LARRAY:
+		right_symbol = TOKEN_RARRAY;
+		break;
+
+	default:
+		right_symbol = left_symbol;
+		Warning("Tool_ToRelationNext called with WRONG symbol, trying to match", pcur->pc_Value);
 		{
-		case TOKEN_LPAREN:
-			right_symbol = TOKEN_RPAREN;
-			break;
-		case TOKEN_LBRACE:
-			right_symbol = TOKEN_RBRACE;
-			break;
-		case TOKEN_LESS:
-			right_symbol = TOKEN_GREAT;
-			break;
-		case TOKEN_LARRAY:
-			right_symbol = TOKEN_RARRAY;
-			break;
-		default:
-			right_symbol = left_symbol;
-			Warning("Tool_ToRelationNext called with WRONG symbol, trying to match", pcur->pc_Value);
-				{
-				char *pt;
-				for(pt = pcur->pc_Value; *pt != '\0'; pt++)
-					printf("[%c] = 0x%x\n", *pt, *pt);
-				}
-			break;
+			/*~~~~~~~~*/
+			char	*pt;
+			/*~~~~~~~~*/
+
+			for(pt = pcur->pc_Value; *pt != '\0'; pt++) printf("[%c] = 0x%x\n", *pt, *pt);
 		}
+		break;
+	}
+
 	next_token = NextToken(pcur);
 	while(count > 0 && next_token != NULL)
-		{
+	{
 		if(next_token->i_ID == left_symbol)
 			count++;
 		else if(next_token->i_ID == right_symbol)
 			count--;
-		if(count > 0)
-			next_token = NextToken(next_token);
-		}
-/*
-	if(next_token == NULL)
-		{
-		char buf[80];
-
-		sprintf(buf, "Line %d Col %d '%s'", pcur->line, pcur->column, pcur->pc_Value);
-		Warning("Tool_ToRelationNext run out of symbols while trying to match", buf);
-		}
-*/
-	return next_token;
+		if(count > 0) next_token = NextToken(next_token);
 	}
+
+	/*
+	 * if(next_token == NULL) { char buf[80];
+	 * sprintf(buf, "Line %d Col %d '%s'", pcur->line, pcur->column, pcur->pc_Value);
+	 * Warning("Tool_ToRelationNext run out of symbols while trying to match", buf);
+	 * }
+	 */
+	return next_token;
+}
 
 /*
  =======================================================================================================================
- Tool_ToRelationPrev : find the matching start symbol in the stream which matches the current symbol 
- This function counts nesting of symbols.
+    Tool_ToRelationPrev : find the matching start symbol in the stream which matches the current symbol This function
+    counts nesting of symbols.
  =======================================================================================================================
  */
 token *Tool_ToRelationPrev(token *pcur)
-	{
-	/*~~~~~~~*/
+{
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 	int count;
 	int right_symbol, left_symbol;
-	/*~~~~~~~*/
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	count = 1;
 	right_symbol = left_symbol = pcur->i_ID;
 	switch(right_symbol)
-		{
-		case TOKEN_RPAREN:
-			left_symbol = TOKEN_LPAREN;
-			break;
-		case TOKEN_RBRACE:
-			left_symbol = TOKEN_LBRACE;
-			break;
-		case TOKEN_GREAT:
-			left_symbol = TOKEN_LESS;
-			break;
-		default:
-			left_symbol = right_symbol;
-			Warning("Tool_ToRelationNext called with WRONG symbol, trying to match", pcur->pc_Value);
-			break;
-		}
+	{
+	case TOKEN_RPAREN:
+		left_symbol = TOKEN_LPAREN;
+		break;
+
+	case TOKEN_RBRACE:
+		left_symbol = TOKEN_LBRACE;
+		break;
+
+	case TOKEN_GREAT:
+		left_symbol = TOKEN_LESS;
+		break;
+
+	default:
+		left_symbol = right_symbol;
+		Warning("Tool_ToRelationNext called with WRONG symbol, trying to match", pcur->pc_Value);
+		break;
+	}
+
 	pcur = PrevToken(pcur);
 	while(count > 0 && pcur != NULL)
-		{
-		if(pcur->i_ID == right_symbol)
-			count++;
-		if(pcur->i_ID == left_symbol)
-			count--;
-		if(count > 0)
-			pcur = PrevToken(pcur);
-		}
-	return pcur;
+	{
+		if(pcur->i_ID == right_symbol) count++;
+		if(pcur->i_ID == left_symbol) count--;
+		if(count > 0) pcur = PrevToken(pcur);
 	}
+
+	return pcur;
+}
 
 /*
  =======================================================================================================================
@@ -651,10 +643,8 @@ void Tool_ForceEmptyLineBefore(token *pcur)
 
 /*
  =======================================================================================================================
- Tool_SetFlag : flag is offset of flag within pbeg...
- ... go through ALL tokens from pbeg to pend and at the computed offset(flag) set the flag to given value
-
- ... REALLY needs reworking ... 
+    Tool_SetFlag : flag is offset of flag within pbeg... ... go through ALL tokens from pbeg to pend and at the
+    computed offset(flag) set the flag to given value ... REALLY needs reworking ...
  =======================================================================================================================
  */
 void Tool_SetFlag(token *pbeg, token *pend, char *flag, char set)
@@ -663,13 +653,10 @@ void Tool_SetFlag(token *pbeg, token *pend, char *flag, char set)
 	int of;
 	/*~~~*/
 
-	if(!pbeg)
-		return;
-	if(!pend)
-		return;
+	if(!pbeg) return;
+	if(!pend) return;
 	of = (char *) flag - (char *) pbeg;
-	for(; pbeg != pend->pst_Next; pbeg = NextToken(pbeg))
-		*(((char *) pbeg) + of) = set;
+	for(; pbeg != pend->pst_Next; pbeg = NextToken(pbeg)) *(((char *) pbeg) + of) = set;
 }
 
 /*
@@ -723,7 +710,7 @@ char Tool_IsSpecialWord(char *p, int *type, int *column)
 		typespec = col = 0;
 		strcpy(az_cpy, gast_CmtCateg[i].mpsz_Name);
 		pz = strchr(az_cpy, ';');
-		if(pz) 
+		if(pz)
 		{
 			/* Type */
 			*pz = 0;
@@ -737,7 +724,7 @@ char Tool_IsSpecialWord(char *p, int *type, int *column)
 			}
 		}
 
-		if(!strcmp(p, az_cpy)) 
+		if(!strcmp(p, az_cpy))
 		{
 			*type = typespec;
 			*column = col;

@@ -1,4 +1,4 @@
-/*$T in.c GC 1.139 12/15/04 23:58:12 */
+/*$T \Sources/in.c GC 1.150 2011-09-22 20:52:17 */
 
 
 /*$6
@@ -26,10 +26,9 @@
 #include <io.h>
 #else
 #include <sys/types.h>
-#include <sys/stat.h> /* for stat() */ 
+#include <sys/stat.h>	/* for stat() */
 #include <dirent.h>
 #endif
-
 #include "tools.h"
 #include "config.h"
 #include "in.h"
@@ -61,7 +60,7 @@ int		gi_NumIncludesDirs = 0;
 
 /*
  =======================================================================================================================
- Find if the given name is found within the table
+    Find if the given name is found within the table
  =======================================================================================================================
  */
 char c_IsPresent(char *name, char **table, int table_entries)
@@ -72,7 +71,7 @@ char c_IsPresent(char *name, char **table, int table_entries)
 
 	for(i = 0; i < table_entries; i++)
 	{
-		if(!strcasecmp (name, table[i])) return 1;
+		if(!strcasecmp(name, table[i])) return 1;
 	}
 
 	return 0;
@@ -133,32 +132,28 @@ zap:
 
 /*
  =======================================================================================================================
- OpenFile : Try to open the file with name at the given index.
-		If the filepart was NOT star open using the MOpenFile routine.
-		Otherwise find all files in the directory and add file names to the gazstar block and then add this file name to
-		the end of the file inforation table. 
-
-		Returns
-			0: No files
-			1: 1 file opened and read
-			2: Multiple files added to table
+    OpenFile : Try to open the file with name at the given index. If the filepart was NOT star open using the MOpenFile
+    routine. Otherwise find all files in the directory and add file names to the gazstar block and then add this file
+    name to the end of the file inforation table. Returns 0: No files 1: 1 file opened and read 2: Multiple files added
+    to table
  =======================================================================================================================
  */
 char OpenFile(int _i_Num)
 {
+	/*~~~~~~~~~~~~~~~~~~~~~~~*/
 #ifdef _WIN32
-	/*~~~~~~~~~~~~~~~~~~~~~~*/
-//	intptr_t		handle;
-	long			handle;
+	/*
+	 * intptr_t handle;
+	 */
+	long				handle;
 	struct _finddata_t	t;
 	FileDes				*pdes;
-	/*~~~~~~~~~~~~~~~~~~~~~~*/
+	/*~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	pdes = &gpst_Files[_i_Num];
 	if(!strrchr(pdes->psz_FileName, '*')) return MOpenFile(_i_Num);
 	handle = _findfirst(pdes->psz_FileName, &t);
-	if(handle != -1)
-		return 0;
+	if(handle != -1) return 0;
 	do
 	{
 		if(gi_NumFiles == 1000) Fatal("Too many input files", 0);
@@ -169,60 +164,63 @@ char OpenFile(int _i_Num)
 	_findclose(handle);
 	return 2;
 #else
-	DIR * dir;
-	struct dirent * d;
-	FileDes * pdes;
-	char dirname[_MAX_PATH];
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	DIR				*dir;
+	struct dirent	*d;
+	FileDes			*pdes;
+	char			dirname[_MAX_PATH];
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	pdes = &gpst_Files[_i_Num];
-	if(!strrchr(pdes->psz_FileName, '*'))
-		return MOpenFile(_i_Num);
+	if(!strrchr(pdes->psz_FileName, '*')) return MOpenFile(_i_Num);
 	strcpy(dirname, pdes->psz_FileName);
-	dirname[ strlen(dirname) - 1] = '\0'; /* Kill the '*' */
+	dirname[strlen(dirname) - 1] = '\0';	/* Kill the '*' */
 	dir = opendir(dirname);
-	if(!dir)
-		return 0;
+	if(!dir) return 0;
 
 	for(d = readdir(dir); d != NULL; d = readdir(dir))
-		{
-		if(gi_NumFiles == 1000)
-			Fatal("Too many input files", 0);
+	{
+		if(gi_NumFiles == 1000) Fatal("Too many input files", 0);
 		strcpy(gazstar + gazstarin, d->d_name);
 		gpst_Files[gi_NumFiles++].psz_FileName = gazstar + gazstarin;
 		gazstarin += strlen(d->d_name) + 1;
-		}
-	return 2; 
+	}
 
-				{
-								struct dirent * d=readdir(dir);
-                while(d)
-								{
-												if(gi_NumFiles == 1000) Fatal("Too many input files", 0);
-												strcpy(gazstar + gazstarin, d->d_name);
-												gpst_Files[gi_NumFiles++].psz_FileName = gazstar + gazstarin;
-												gazstarin += strlen(d->d_name) + 1;
-                        d = readdir(dir);
-								}
-				}
-				return 2;
+	return 2;
+	{
+		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+		struct dirent	*d = readdir(dir);
+		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+		while(d)
+		{
+			if(gi_NumFiles == 1000) Fatal("Too many input files", 0);
+			strcpy(gazstar + gazstarin, d->d_name);
+			gpst_Files[gi_NumFiles++].psz_FileName = gazstar + gazstarin;
+			gazstarin += strlen(d->d_name) + 1;
+			d = readdir(dir);
+		}
+	}
+
+	return 2;
 #endif
 }
 
 /*
  =======================================================================================================================
- MOpenFileRec : Try to open the named file in the lowest child of the given path.
- i.e. recursivily decend to the lowest child directory and then find the first file with given name. 
-
- (Not really sure why this is needed :-)  ) 
+    MOpenFileRec : Try to open the named file in the lowest child of the given path. i.e. recursivily decend to the
+    lowest child directory and then find the first file with given name. (Not really sure why this is needed :-) )
  =======================================================================================================================
  */
 FILE *MOpenFileRec(char *path, char *file)
 {
-#ifdef _WIN32
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+#ifdef _WIN32
 	struct _finddata_t	st_FileInfo;
-//	intptr_t		handle;
-	long			handle;
+	/*
+	 * intptr_t handle;
+	 */
+	long				handle;
 	char				asz_Temp[_MAX_PATH];
 	FILE				*h;
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -236,85 +234,84 @@ FILE *MOpenFileRec(char *path, char *file)
 		{
 			if(st_FileInfo.attrib == _A_SUBDIR)
 			{
-				if(!strcasecmp (st_FileInfo.name, ".")) continue;
-				if(!strcasecmp (st_FileInfo.name, "..")) continue;
+				if(!strcasecmp(st_FileInfo.name, ".")) continue;
+				if(!strcasecmp(st_FileInfo.name, "..")) continue;
 				sprintf(asz_Temp, "%s/%s", path, st_FileInfo.name);
 				h = MOpenFileRec(asz_Temp, file);
 				if(h)
-					{
+				{
 					_findclose(handle);
 					return h;
-					}
+				}
 			}
 			else
 			{
-				if(!strcasecmp (file, st_FileInfo.name))
+				if(!strcasecmp(file, st_FileInfo.name))
 				{
 					sprintf(asz_Temp, "%s/%s", path, st_FileInfo.name);
 					h = fopen(asz_Temp, "rt");
 					if(h)
-						{
+					{
 						_findclose(handle);
 						return h;
-						}
+					}
 				}
 			}
 		} while(_findnext(handle, &st_FileInfo) != -1);
 		_findclose(handle);
 	}
-	return NULL;
- #else
-	{
-	DIR * dir;
-	struct dirent * d;
-	char asz_Temp[_MAX_PATH];
-	FILE * h;
 
-	strcpy(asz_Temp, path);
-	dir = opendir(asz_Temp);
-	if(!dir)
+	return NULL;
+#else
+	{
+		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+		DIR				*dir;
+		struct dirent	*d;
+		char			asz_Temp[_MAX_PATH];
+		FILE			*h;
+		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+		strcpy(asz_Temp, path);
+		dir = opendir(asz_Temp);
+		if(!dir)
 		{
-		for(d = readdir(dir); d != NULL; d = readdir(dir))
+			for(d = readdir(dir); d != NULL; d = readdir(dir))
 			{
-			struct stat stat_buf;
-			stat(d->d_name, &stat_buf);
-			if(S_ISDIR(stat_buf.st_mode))
+				/*~~~~~~~~~~~~~~~~~*/
+				struct stat stat_buf;
+				/*~~~~~~~~~~~~~~~~~*/
+
+				stat(d->d_name, &stat_buf);
+				if(S_ISDIR(stat_buf.st_mode))
 				{
-				if(!strcasecmp (d->d_name, "."))
-					continue;
-				if(!strcasecmp (d->d_name, ".."))
-					continue;
-				sprintf(asz_Temp, "%s/%s", path, d->d_name);
-				h = MOpenFileRec(asz_Temp, file);
-				if(h) return h;
-				}
-			else
-				{
-				if(!strcasecmp (file, d->d_name))
-					{
+					if(!strcasecmp(d->d_name, ".")) continue;
+					if(!strcasecmp(d->d_name, "..")) continue;
 					sprintf(asz_Temp, "%s/%s", path, d->d_name);
-					h = fopen(asz_Temp, "rt");
+					h = MOpenFileRec(asz_Temp, file);
 					if(h) return h;
+				}
+				else
+				{
+					if(!strcasecmp(file, d->d_name))
+					{
+						sprintf(asz_Temp, "%s/%s", path, d->d_name);
+						h = fopen(asz_Temp, "rt");
+						if(h) return h;
 					}
 				}
 			}
 		}
 	}
+
 	return NULL;
-#endif 
+#endif
 }
 
 /*
  =======================================================================================================================
- MOpenFile : Open the file from table at given index (if cannot directly find it, try include driectories and "other direcotries"
-		(Fail if cannot open file !) ... 
-
-		Allocate buffer big enough to hold the complete content of file and read the file into this buffer
-
-		Do "magic replace" if requested
-
-		Finally close file and return 
-
+    MOpenFile : Open the file from table at given index (if cannot directly find it, try include driectories and "other
+    direcotries" (Fail if cannot open file !) ... Allocate buffer big enough to hold the complete content of file and
+    read the file into this buffer Do "magic replace" if requested Finally close file and return
  =======================================================================================================================
  */
 char MOpenFile(int _i_Num)
@@ -325,7 +322,7 @@ char MOpenFile(int _i_Num)
 	FileDes *pdes;
 	char	asz_Path[512];
 	int		i;
-	char *pz;
+	char	*pz;
 	/*~~~~~~~~~~~~~~~~~~*/
 
 	pdes = &gpst_Files[_i_Num];
@@ -384,18 +381,21 @@ ok:
 	pz = strchr(pdes->pc_Buffer, '\r');
 
 	if(pz != NULL)
-		{
-		char *from, *to;
+	{
+		/*~~~~~~~~~~~~~~~*/
+		char	*from, *to;
+		/*~~~~~~~~~~~~~~~*/
 
-		for(from = &pz[1], to = pz; *from != '\0'; )
-			{
+		for(from = &pz[1], to = pz; *from != '\0';)
+		{
 			if(*from == '\r')
 				from++;
 			else
 				*to++ = *from++;
-			}
-		*to = '\0';
 		}
+
+		*to = '\0';
+	}
 
 	/* Close file */
 	fclose(h);
@@ -404,7 +404,7 @@ ok:
 
 /*
  =======================================================================================================================
- CloseFile : Free all tokens parsed from the file with given index (doesn't REALLY close any file :-) ) 
+    CloseFile : Free all tokens parsed from the file with given index (doesn't REALLY close any file :-) )
  =======================================================================================================================
  */
 void CloseFile(int _i_Num)
@@ -428,7 +428,7 @@ void CloseFile(int _i_Num)
 
 /*
  =======================================================================================================================
- Add filename to the list of files to be prrocessed (if it looks to be the RIGHT sort of file)
+    Add filename to the list of files to be prrocessed (if it looks to be the RIGHT sort of file)
  =======================================================================================================================
  */
 void CreateFile(char *_psz_FileName)
@@ -447,15 +447,15 @@ void CreateFile(char *_psz_FileName)
 
 	if
 	(
-		(strcasecmp (psz_Temp, "c"))
-	&&	(strcasecmp (psz_Temp, "cpp"))
-	&&	(strcasecmp (psz_Temp, "cxx"))
-	&&	(strcasecmp (psz_Temp, "h"))
-	&&	(strcasecmp (psz_Temp, "hxx"))
-	&&	(strcasecmp (psz_Temp, "hpp"))
-	&&	(strcasecmp (psz_Temp, "java"))
-	&&	(strcasecmp (psz_Temp, "inc"))
-	&&	(strcasecmp (psz_Temp, "cs"))
+		(strcasecmp(psz_Temp, "c"))
+	&&	(strcasecmp(psz_Temp, "cpp"))
+	&&	(strcasecmp(psz_Temp, "cxx"))
+	&&	(strcasecmp(psz_Temp, "h"))
+	&&	(strcasecmp(psz_Temp, "hxx"))
+	&&	(strcasecmp(psz_Temp, "hpp"))
+	&&	(strcasecmp(psz_Temp, "java"))
+	&&	(strcasecmp(psz_Temp, "inc"))
+	&&	(strcasecmp(psz_Temp, "cs"))
 	) return;
 
 	/* First init file in array */
@@ -468,17 +468,19 @@ void CreateFile(char *_psz_FileName)
 
 /*
  =======================================================================================================================
- CreateFilesInDir : Find all files in given directory adding them to the global list of files
- If recure is turned on AND a directory if found, decend into that directory and recurse.
+    CreateFilesInDir : Find all files in given directory adding them to the global list of files If recure is turned on
+    AND a directory if found, decend into that directory and recurse.
  =======================================================================================================================
  */
 void CreateFilesInDir(char *_psz_Path)
 {
-#ifdef _WIN32
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+#ifdef _WIN32
 	struct _finddata_t	st_FileInfo;
-//	intptr_t		handle;
-	long			handle;
+	/*
+	 * intptr_t handle;
+	 */
+	long				handle;
 	char				asz_Temp[_MAX_PATH];
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -497,10 +499,9 @@ void CreateFilesInDir(char *_psz_Path)
 			/* One dir has been detected. Recurse call except for "." and ".." */
 			if(st_FileInfo.attrib & _A_SUBDIR)
 			{
-				if(!strcasecmp (st_FileInfo.name, ".")) continue;
-				if(!strcasecmp (st_FileInfo.name, "..")) continue;
-				if(!c_IsPresent(asz_Temp, gpsz_ExcludeDirs, gi_NumExcludeDirs))
-					CreateFilesInDir(asz_Temp);
+				if(!strcasecmp(st_FileInfo.name, ".")) continue;
+				if(!strcasecmp(st_FileInfo.name, "..")) continue;
+				if(!c_IsPresent(asz_Temp, gpsz_ExcludeDirs, gi_NumExcludeDirs)) CreateFilesInDir(asz_Temp);
 			}
 
 			/* One file has been detected. Add it to bigfile */
@@ -511,39 +512,45 @@ void CreateFilesInDir(char *_psz_Path)
 		} while(_findnext(handle, &st_FileInfo) != -1);
 		_findclose(handle);
 	}
+
 #else
-	char asz_Temp[_MAX_PATH];
-	DIR * dir;
-	struct dirent *d;
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	char			asz_Temp[_MAX_PATH];
+	DIR				*dir;
+	struct dirent	*d;
+	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	strcpy(asz_Temp, _psz_Path);
 	dir = opendir(asz_Temp);
 	if(dir != NULL)
-		{
+	{
 		for(d = readdir(dir); d != NULL; d = readdir(dir))
-			{
+		{
+			/*~~~~~~~~~~~~~~~~~*/
 			struct stat stat_buf;
+			/*~~~~~~~~~~~~~~~~~*/
+
 			stat(d->d_name, &stat_buf);
+
 			/* Compute real name and file/dir bigfile name */
 			strcpy(asz_Temp, _psz_Path);
 			strcat(asz_Temp, "/");
 			strcat(asz_Temp, d->d_name);
+
 			/* One dir has been detected. Recurse call except for "." and ".." */
 			if(S_ISDIR(stat_buf.st_mode))
-				{
-				if(!strcasecmp (d->d_name, "."))
-					continue;
-				if(!strcasecmp (d->d_name, ".."))
-					continue;
-				if(!c_IsPresent(asz_Temp, gpsz_ExcludeDirs, gi_NumExcludeDirs))
-					CreateFilesInDir(asz_Temp);
-				}
+			{
+				if(!strcasecmp(d->d_name, ".")) continue;
+				if(!strcasecmp(d->d_name, "..")) continue;
+				if(!c_IsPresent(asz_Temp, gpsz_ExcludeDirs, gi_NumExcludeDirs)) CreateFilesInDir(asz_Temp);
+			}
+
 			/* One file has been detected. Add it to bigfile */
 			else
-				{
+			{
 				CreateFile(asz_Temp);
-				}
 			}
-		} 
+		}
+	}
 #endif
 }

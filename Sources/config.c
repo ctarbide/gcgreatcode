@@ -1,4 +1,4 @@
-/*$T config.c GC 1.139 12/15/04 23:57:47 */
+/*$T \Sources/config.c GC 1.150 2011-09-22 20:52:17 */
 
 
 /*$6
@@ -22,7 +22,7 @@
 #endif
 #include <ctype.h>
 
-#define CONFIG_GLOB			/* generate the global instances of items within config.h (instead of defining them as external */
+#define CONFIG_GLOB /* generate the global instances of items within config.h (instead of defining them as external */
 #include "config.h"
 #include "in.h"
 #include "error.h"
@@ -261,7 +261,7 @@ gast_Options[] =
 
 /*
  =======================================================================================================================
- Usage: Print the Usage message
+    Usage: Print the Usage message
  =======================================================================================================================
  */
 void Usage(void)
@@ -387,18 +387,9 @@ void Usage(void)
 
 /*
  =======================================================================================================================
- =======================================================================================================================
- */
-/* Not used ? 
-void ForceOption(char *opt)
-{
-	Options(1, &opt);
-}
-*/
-
-/*
- =======================================================================================================================
- Default : set values to their defaults
+    Not used ? void ForceOption(char *opt) { Options(1, &opt);
+    } ;
+    Default : set values to their defaults
  =======================================================================================================================
  */
 void Default(void)
@@ -422,7 +413,7 @@ void Default(void)
 
 /*
  =======================================================================================================================
- CheckConfig : check that configured options are allowed, force some configuration is certain flags given.
+    CheckConfig : check that configured options are allowed, force some configuration is certain flags given.
  =======================================================================================================================
  */
 void CheckConfig(void)
@@ -463,7 +454,7 @@ void CheckConfig(void)
 
 /*
  =======================================================================================================================
- ConvertFile : Set options from the content of the given file
+    ConvertFile : Set options from the content of the given file
  =======================================================================================================================
  */
 int ConvertFile(char *name)
@@ -490,7 +481,7 @@ int ConvertFile(char *name)
 
 /*
  =======================================================================================================================
- ConvertFileToArgv : build an argument list from the content of the given file
+    ConvertFileToArgv : build an argument list from the content of the given file
  =======================================================================================================================
  */
 void ConvertFileToArgv(FILE *h, int *argc)
@@ -564,6 +555,7 @@ void ConvertFileToArgv(FILE *h, int *argc)
 			gargv[*argc] = strdup(pmem);
 			ptmp++;
 		}
+
 		printf("arg[%d] = %s\n", *argc, gargv[*argc]);
 		(*argc)++;
 	}
@@ -573,7 +565,7 @@ void ConvertFileToArgv(FILE *h, int *argc)
 
 /*
  =======================================================================================================================
- Options : set configuration from the given option array 
+    Options : set configuration from the given option array
  =======================================================================================================================
  */
 void Options(int argc, char *argv[])
@@ -695,7 +687,7 @@ void Options(int argc, char *argv[])
 					if(strchr(gz_CfgFileName, DIR_SEPARATOR) == NULL)
 					{
 						strcpy(asz_Path, asz_Temp);
-						strcat(asz_Path, "/");				/* really should be "DIR_SEPARATOR" .. but */
+						strcat(asz_Path, "/");	/* really should be "DIR_SEPARATOR" .. but */
 						strcat(asz_Path, gz_CfgFileName);
 					}
 					else
@@ -773,8 +765,8 @@ void Options(int argc, char *argv[])
 				}
 			}
 		}
-		if(i == GAST_ENTRIES)
-			Fatal("Unknown option", ptest);
+
+		if(i == GAST_ENTRIES) Fatal("Unknown option", ptest);
 
 		ptest = argv[i];
 	}

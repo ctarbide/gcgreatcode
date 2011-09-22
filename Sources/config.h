@@ -1,4 +1,4 @@
-/*$T config.h GC 1.139 12/15/04 23:59:19 */
+/*$T \Sources/config.h GC 1.150 2011-09-22 20:52:17 */
 
 
 /*$6
@@ -30,7 +30,7 @@
  */
 
 #define VERSION		1
-#define REVISION	140
+#define REVISION	150
 
 /*$2
  -----------------------------------------------------------------------------------------------------------------------
@@ -263,7 +263,7 @@ extern char *gz_FixmeComment;
  -----------------------------------------------------------------------------------------------------------------------
  */
 
-extern int ConvertFile(char *);
+extern int	ConvertFile(char *);
 extern void ConvertFileToArgv(FILE *, int *);
 extern void Usage(void);
 extern void Default(void);
