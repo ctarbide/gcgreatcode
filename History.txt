@@ -1,3 +1,26 @@
+		Version 1.150 (15 November 2011)
+		------------------------------------------------------------------------------------------------------
+
+		Building:
+		Bakefile intorduced for building gc - for Windows, Linux
+		Will compile and work on Windows, Linux (& possibly Mas OS)
+		See www.bakefile.org for tool needed to translate the bakefile to project or makefile
+
+		Misc:
+		Syntax function now takes line & column number - so easier to locate where GC cannot process a file
+
+		Assorted bugs fixed
+
+		Options:
+		Option -eol_unix- is default off when running on Windows and is default on when running on non WIN32 hosts
+		Option -cmt_dont_modify- is now on by default - New users are often negativly surprised by default comment
+		 behaviour reformating carefully pre-formatted comments
+		option -no-cmt_decl- is now default
+
+		Bugs:
+		-cmt-doxygen- doesn't seem to work as expected. (Hopefully fixed in a future release) 
+
+
 		Version 1.140 (15 December 2004)
 		------------------------------------------------------------------------------------------------------
 
