@@ -761,16 +761,6 @@ int FixedComment(token *pcur)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	if(Config.NoCmtIndent || pcur->WizardCmt) return 1;
-	if(mark && (pcur->i_ID == TOKEN_CPPCMT || pcur->CppComment))
-	{
-		if
-		(
-			mark == Config.CmtKeepCharCpp1
-		||	mark == Config.CmtKeepCharCpp2
-		||	mark == Config.CmtKeepCharCpp3
-		||	mark == Config.CmtKeepCharCpp4
-		) return 1;
-	}
 
 	if(pcur->i_ID == TOKEN_CCMT)
 	{
@@ -779,16 +769,7 @@ int FixedComment(token *pcur)
 			(pcur->pc_Value[2] == CMTMARK && pcur->pc_Value[3] == 'F')
 		||	(pcur->pc_Value[3] == CMTMARK && pcur->pc_Value[4] == 'F')
 		) return 1;
-		if
-		(
-			mark
-		&&	(
-				mark == Config.CmtKeepChar1
-			||	mark == Config.CmtKeepChar2
-			||	mark == Config.CmtKeepChar3
-			||	mark == Config.CmtKeepChar4
-			)
-		) return 1;
+
 	}
 
 	return 0;

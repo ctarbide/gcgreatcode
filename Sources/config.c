@@ -175,34 +175,22 @@ gast_Options[] =
 	{ "pp_align_breakline-",				TYPE_OPT_BOOL,		&Config.AlignBL, 0, 0, "Align break lines in multi lines macros"},
 	{ "cmt_fixme-",							TYPE_OPT_FIXME_CMT, NULL, 0, 0, "Specify the string for FIXME comment the default is \"/* FIXME: Comment */\""},
 	{ "cmt_align_max_blanks-",				TYPE_OPT_INT,		&Config.MaxAlignCmt, 20, 1, "The max number of blanks to add for last line comments"},
-	{ "cmt_dont_modify-",					TYPE_OPT_BOOL,		&Config.NoCmtIndent, 0, 0, "Never touched comments (like $F directive but for all comments)"},
-	{ "cmt_keep-char_1-",					TYPE_OPT_CHAR,		&Config.CmtKeepChar1, 0, 0, "Never touched comments like /**<char>"},
-	{ "cmt_keep-char_2-",					TYPE_OPT_CHAR,		&Config.CmtKeepChar2, 0, 0, "Never touched comments like /**<char>"},
-	{ "cmt_keep-char_3-",					TYPE_OPT_CHAR,		&Config.CmtKeepChar3, 0, 0, "Never touched comments like /**<char>"},
-	{ "cmt_keep-char_4-",					TYPE_OPT_CHAR,		&Config.CmtKeepChar4, 0, 0, "Never touched comments like /**<char>"},
-	{ "cmt_keep-char_cpp_1-",				TYPE_OPT_CHAR,		&Config.CmtKeepCharCpp1, 0, 0, "Never touched comments like /**<char>"},
-	{ "cmt_keep-char_cpp_2-",				TYPE_OPT_CHAR,		&Config.CmtKeepCharCpp2, 0, 0, "Never touched comments like /**<char>"},
-	{ "cmt_keep-char_cpp_3-",				TYPE_OPT_CHAR,		&Config.CmtKeepCharCpp3, 0, 0, "Never touched comments like /**<char>"},
-	{ "cmt_keep-char_cpp_4-",				TYPE_OPT_CHAR,		&Config.CmtKeepCharCpp4, 0, 0, "Never touched comments like /**<char>"},
+	{ "cmt_dont_modify-",					TYPE_OPT_BOOL,		&Config.NoCmtIndent, 1, 0, "Never touched comments (like $F directive but for all comments)"},
 	{ "cmt_add_gc_tag-",					TYPE_OPT_BOOL,		&Config.TagFile, 1, 0, "Add a /*$T */ mark at the beginning of file (if not already present)"},
 	{ "cmt_add_file-",						TYPE_OPT_BOOL,		&Config.FileCmt, 1, 0, "Add a special comment at the beginning of file (if not already present)"},
 	{ "cmt_add_file_style-",				TYPE_OPT_INT,		&Config.FileCmtStyle, 0, 0, "Special comment style at the beginning of file"},
 	{ "cmt_add_fct_def-",					TYPE_OPT_BOOL,		&Config.AddCmtFct, 1, 0, "Add an empty comment before function definition (if not already present)"},
 	{ "cmt_add_fct_def_class-",				TYPE_OPT_BOOL,		&Config.AddCmtFctClass, 1, 0, "Add an empty comment before inline function in class (if not already present)"},
 	{ "cmt_trailing_style-",				TYPE_OPT_INT,		&Config.TrailingCmtStyle, 0, 0, "Trailing comment style"},
-	{ "cmt_split_before_@_in_fct_cmts-",	TYPE_OPT_BOOL,		&Config.SplitBeforeAtInFctCmts, 0, 0, "Split comments before '@'"},
 	{ "cmt_add_class_access-",				TYPE_OPT_BOOL,		&Config.AddCmtClassAccess, 1, 0, "Add an empty comment before class access (if not already present)"},
 	{ "cmt_first_space_cpp-",				TYPE_OPT_BOOL,		&Config.SpaceCmtCpp, 1, 0, "Force a space after the opening comment delimiter '//'"},
 	{ "cmt_keep_cpp-",						TYPE_OPT_BOOL,		&Config.CmtKeepCpp, 0, 0, "Keep C++ comments in code"},
-	{ "cmt_force_fct_def_decl_split-",		TYPE_OPT_BOOL,		&Config.ForceFctDefDeclSplit, 0, 0, "Force function definitions and declarations to split"},
-	{ "cmt_java_doc-",						TYPE_OPT_BOOL,		&Config.JavaDoc, 0, 0, "Enable the java doc type comments"},
-	{ "cmt_fct_java_doc-",					TYPE_OPT_BOOL,		&Config.FctJavaDoc, 0, 0, "Enable the java doc type comments for functions"},
+	{ "cmt_force_fct_def_decl_split-",		TYPE_OPT_BOOL,		&Config.ForceFctDefDeclSplit, 0, 0, "Force function defintions and declartions to split"},
 	{ "cmt_c2cpp-",							TYPE_OPT_BOOL,		&Config.CToCpp, 0, 0, "Convert all C comments to the C++ form"},
 	{ "cmt_cpp2c_keep_eol-",				TYPE_OPT_BOOL,		&Config.CppToCKeepEOL, 1, 0, "When converting C++ comments to C, replace EOL with GC break line character)"},
 	{ "cmt_fct_categ-",						TYPE_OPT_CTGFXCMT,	NULL, 0, 0, "Add a special keyword for function declaration comments"},
 	{ "cmt_fct_categ_in-",					TYPE_OPT_CTGFXCMT1, NULL, 0, 0, "Add a special keyword for parameters description in a function declaration comment"},
-	{ "cmt_fct_categ_style-",				TYPE_OPT_INT,		&Config.CmtCategCtyle, 0, 0, "Style for special words in comments"},
-	{ "cmt_decl-",							TYPE_OPT_BOOL,		&Config.CmtDeclStmt, 1, 0, "Add separators in local variable declaration (before and/or after)"},
+	{ "cmt_decl-",							TYPE_OPT_BOOL,		&Config.CmtDeclStmt, 0, 0, "Add separators in local variable declaration (before and/or after)"},
 	{ "cmt_decl_max_level-",				TYPE_OPT_INT,		&Config.CmtDeclMaxLevel, 100, 0, "-cmt_decl- option is valid for declaration in a statement level < that value"},
 	{ "cmt_decl_before-",					TYPE_OPT_BOOL,		&Config.CmtSepDeclBefore, 1, 0, "Add a separator before local declarations"},
 	{ "cmt_decl_len-",						TYPE_OPT_INT,		&Config.LineLenCmtSepDecl, 120, 0, "Length of separators in a local declaration"},
@@ -431,18 +419,6 @@ void CheckConfig(void)
 	}
 
 	if(Config.CToCpp) Config.CmtKeepCpp = 1;
-
-	if(Config.FctJavaDoc)
-	{
-		Config.CmtSeparatorStar = 1;
-	}
-
-	if(Config.JavaDoc)
-	{
-		Config.CmtSeparatorStar = 1;
-		Config.FctJavaDoc = 1;
-	}
-
 	if(Config.TrailingCmtStyle)
 	{
 		Config.ForceFctDefDeclSplit = 1;
