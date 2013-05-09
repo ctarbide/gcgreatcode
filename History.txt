@@ -2,10 +2,15 @@
 		------------------------------------------------------------------------------------------------------
 
 		Building:
-		Bakefile intorduced for building gc - for Windows, Linux
+		Bakefile introduced for building gc - for Windows, Linux
 		Will compile and work on Windows, Linux (& possibly Mas OS)
 		See www.bakefile.org for tool needed to translate the bakefile to project or makefile
 
+		premake4 introduced for building gc - for Windows, Linux
+		Can build visual Studio 2010 project file
+		http://industriousone.com/premake
+
+		
 		Misc:
 		Syntax function now takes line & column number - so easier to locate where GC cannot process a file
 
